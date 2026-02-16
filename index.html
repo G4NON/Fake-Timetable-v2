@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar</title>
+    <title>CELCAT Calendar - Université de Toulouse</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -13,6 +13,7 @@
             --td-red: #f88c8c;
             --tp-teal: #64b4a1;
             --text-main: #333333;
+            --header-height: 50px; /* Augmenté pour correspondre à l'image */
         }
 
         body {
@@ -25,20 +26,32 @@
             overflow: hidden;
         }
 
+        /* --- HEADER VERT LARGE (IMAGE 1 & 2) --- */
         header {
             background-color: var(--ut3-green);
             color: white;
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            font-size: 13px;
-            height: 38px;
+            padding: 0 20px;
+            font-size: 14px;
+            height: var(--header-height);
             z-index: 200;
         }
 
-        .logo-area { font-weight: bold; font-size: 15px; margin-right: 25px; }
-        nav span { margin: 0 12px; cursor: pointer; opacity: 0.9; }
-        .user-info { margin-left: auto; font-size: 11px; display: flex; align-items: center; gap: 5px; }
+        .logo-area { font-weight: bold; font-size: 18px; margin-right: 30px; }
+        
+        nav { display: flex; align-items: center; height: 100%; }
+        nav span { 
+            margin: 0 15px; 
+            cursor: pointer; 
+            opacity: 0.9; 
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        nav span:hover { text-decoration: underline; }
+
+        .user-info { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 8px; }
 
         .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
 
@@ -52,15 +65,15 @@
             z-index: 10;
         }
 
-        .sidebar-title { background: #e2e8e5; padding: 10px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border-dark); }
+        .sidebar-title { background: #e2e8e5; padding: 12px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border-dark); }
         .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
         .mini-calendar { margin-top: 10px; border: 1px solid #ccc; background: white; text-align: center; width: 60px; border-radius: 3px; overflow: hidden; }
 
-        /* --- TIROIR D'EDITION (FIXÉ) --- */
+        /* --- TIROIR D'EDITION (FIXÉ & CACHÉ) --- */
         .editor-drawer {
-            position: fixed; /* Changé de absolute à fixed pour ne pas influencer le layout */
-            left: -300px; 
-            top: 38px; /* Sous le header */
+            position: fixed;
+            left: -305px; /* Décalé pour être totalement invisible */
+            top: var(--header-height);
             bottom: 0;
             width: 300px;
             background: white;
@@ -68,21 +81,20 @@
             z-index: 150; 
             transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 10px 0 20px rgba(0,0,0,0.3);
-            padding: 20px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
         }
 
-        .editor-drawer.open {
-            left: 0; 
-        }
+        .editor-drawer.open { left: 0; }
 
+        /* ENGRENAGE EN BAS À GAUCHE */
         .tab-trigger {
             position: absolute;
-            right: -40px;
-            top: 100px;
-            width: 40px;
+            right: -42px;
+            bottom: 40px; 
+            width: 42px;
             height: 50px;
             background: var(--ut3-green);
             color: white;
@@ -91,18 +103,18 @@
             justify-content: center;
             cursor: pointer;
             border-radius: 0 5px 5px 0;
-            font-size: 20px;
+            font-size: 22px;
             box-shadow: 4px 0 8px rgba(0,0,0,0.1);
         }
 
-        .admin-panel h4 { margin: 0 0 15px 0; color: var(--ut3-green); text-transform: uppercase; font-size: 12px; }
-        input, select, button { width: 100%; margin-bottom: 10px; font-size: 13px; padding: 8px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
+        .admin-panel h4 { margin: 0 0 15px 0; color: var(--ut3-green); text-transform: uppercase; font-size: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        input, select, button { width: 100%; margin-bottom: 12px; font-size: 13px; padding: 10px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
         .btn-valider { background: #f5f5f5; font-weight: bold; cursor: pointer; border: 1px solid #bbb; }
         .btn-pdf { background: #333; color: white; cursor: pointer; font-weight: bold; border: none; }
 
         /* CALENDRIER */
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
-        .calendar-top-bar { padding: 8px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); }
+        .calendar-top-bar { padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); background: #fcfcfc; }
         .current-date-display { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
 
         .grid-wrapper { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 60px repeat(7, 1fr); grid-template-rows: 35px repeat(28, 35px); position: relative; }
@@ -114,7 +126,7 @@
         .course-box.td { background-color: var(--td-red); }
         .course-box.tp { background-color: var(--tp-teal); }
         
-        .del-btn { position: absolute; bottom: 2px; right: 2px; background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 10px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0; }
+        .del-btn { position: absolute; bottom: 3px; right: 3px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 11px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 2px; opacity: 0; transition: opacity 0.2s; }
         .course-box:hover .del-btn { opacity: 1; }
 
         @media print { .editor-drawer, .tab-trigger, header { display: none !important; } }
@@ -124,17 +136,23 @@
 
 <header>
     <div class="logo-area">Université de Toulouse</div>
-    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span></nav>
-    <div class="user-info" id="topUserInfo">👤 Déconnexion</div>
+    <nav>
+        <span>Accueil</span>
+        <span>Sélecteur de dates</span>
+        <span>Filtre d'événements</span>
+        <span>Partager</span>
+        <span>Aide</span>
+    </nav>
+    <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
 </header>
 
 <div class="layout">
     <div class="editor-drawer" id="drawer">
-        <div class="tab-trigger" onclick="toggleDrawer()">⚙️</div>
+        <div class="tab-trigger" onclick="toggleDrawer()" title="Éditeur de planning">⚙️</div>
         <div class="admin-panel">
             <h4>Éditeur de Planning</h4>
-            <input type="text" id="cName" placeholder="Matière">
-            <input type="text" id="cRoom" placeholder="Salle">
+            <input type="text" id="cName" placeholder="Nom de la matière">
+            <input type="text" id="cRoom" placeholder="Salle / Amphi">
             <select id="cDay">
                 <option value="2">Lundi</option><option value="3">Mardi</option>
                 <option value="4">Mercredi</option><option value="5">Jeudi</option>
@@ -149,8 +167,8 @@
                 <option value="cours">Cours Magistral</option><option value="td">TD</option><option value="tp">TP</option>
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
-            <button class="btn-pdf" onclick="window.print()">Télécharger PDF</button>
-            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer;" onclick="resetIdentity()">Changer d'identité</button>
+            <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
+            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer; color: #666;" onclick="resetIdentity()">Changer d'identité étudiant</button>
         </div>
     </div>
 
@@ -168,15 +186,15 @@
     <div class="calendar-container">
         <div class="calendar-top-bar">
             <div style="display:flex; gap:8px;">
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">Aujourd'hui</button>
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&lt;</button>
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&gt;</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">Aujourd'hui</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">&lt;</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">&gt;</button>
             </div>
             <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
             <div style="display:flex; border:1px solid #ccc; border-radius:3px; overflow:hidden;">
-                <button style="background:#f9f9f9; border:none; border-right:1px solid #ccc; padding:4px 10px; font-size:11px; cursor:pointer;">Mois</button>
-                <button style="background:#dcdcdc; border:none; border-right:1px solid #ccc; padding:4px 10px; font-size:11px; cursor:pointer; font-weight:bold;">Semaine</button>
-                <button style="background:#f9f9f9; border:none; padding:4px 10px; font-size:11px; cursor:pointer;">Jour</button>
+                <button style="background:#f9f9f9; border:none; border-right:1px solid #ccc; padding:5px 12px; font-size:12px; cursor:pointer;">Mois</button>
+                <button style="background:#dcdcdc; border:none; border-right:1px solid #ccc; padding:5px 12px; font-size:12px; cursor:pointer; font-weight:bold;">Semaine</button>
+                <button style="background:#f9f9f9; border:none; padding:5px 12px; font-size:12px; cursor:pointer;">Jour</button>
             </div>
         </div>
 
@@ -197,7 +215,7 @@
     const grid = document.getElementById('grid');
     const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v_fixed_drawer')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_v_final_styled')) || [];
 
     function toggleDrawer() { drawer.classList.toggle('open'); }
 
@@ -216,7 +234,7 @@
 
     function updateDates() {
         const today = new Date();
-        const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+        const monday = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
         const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
         document.getElementById('dateDisplay').innerText = `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} 2026`;
         for(let i=0; i<7; i++) {
@@ -243,7 +261,7 @@
 
     function addCourse() {
         courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', day: document.getElementById('cDay').value, start: document.getElementById('cStartH').value, dur: document.getElementById('cDur').value, type: document.getElementById('cType').value });
-        localStorage.setItem('celcat_v_fixed_drawer', JSON.stringify(courses)); render();
+        localStorage.setItem('celcat_v_final_styled', JSON.stringify(courses)); render();
     }
 
     function render() {
@@ -257,7 +275,7 @@
         });
     }
 
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_fixed_drawer', JSON.stringify(courses)); render(); }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_final_styled', JSON.stringify(courses)); render(); }
 
     init();
 </script>
