@@ -3,286 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edt Maker - FSI Toulouse</title>
+    <title>CELCAT Calendar - Université de Toulouse</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --bg-main: #f8fafc;
-            --border: #e2e8f0;
-            --text: #0f172a;
-            --cours: #818cf8;
-            --td: #fb7185;
-            --tp: #34d399;
+            --ut3-green: #1d3d2e;
+            --sidebar-bg: #f0f4f2;
+            --border-color: #d1d1d1;
+            --text-dark: #333;
+            /* Couleurs CELCAT exactes */
+            --cours-blue: #7d8cf4;
+            --td-red: #f88c8c;
+            --tp-teal: #64b4a1;
         }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg-main);
-            color: var(--text);
+            font-family: Arial, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            color: var(--text-dark);
         }
 
+        /* BANDEAU UNIVERSITÉ */
         header {
-            background: white;
-            padding: 0 20px;
-            height: 60px;
+            background-color: var(--ut3-green);
+            color: white;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
+            padding: 5px 20px;
+            font-size: 14px;
         }
 
-        .layout {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-        }
+        .logo-area { font-weight: bold; font-size: 18px; margin-right: 30px; }
+        nav span { margin: 0 10px; cursor: pointer; opacity: 0.9; }
+        nav span:hover { text-decoration: underline; }
 
-        /* Barre latérale */
+        .layout { display: flex; flex: 1; overflow: hidden; }
+
+        /* BARRE LATERALE CELCAT */
         aside {
-            width: 300px;
-            background: white;
-            border-right: 1px solid var(--border);
-            padding: 20px;
+            width: 220px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
         }
 
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 0.85rem; font-weight: 600; color: #64748b; }
-        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
-        input:focus { border-color: var(--primary); }
-
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: opacity 0.2s;
+        .sidebar-section { border-bottom: 1px solid var(--border-color); }
+        .sidebar-title { 
+            background: #e2e8e5; 
+            padding: 8px 12px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            border-bottom: 1px solid var(--border-color);
         }
-        .btn-add:hover { opacity: 0.9; }
+        .sidebar-content { padding: 10px 12px; font-size: 12px; line-height: 1.4; }
 
-        /* Grille du Calendrier */
+        /* FORMULAIRE D'AJOUT (Caché dans la structure originale mais nécessaire ici) */
+        .admin-panel {
+            background: #fff;
+            padding: 10px;
+            border-top: 2px solid var(--ut3-green);
+            font-size: 11px;
+        }
+        input, select, button { width: 100%; margin-bottom: 5px; font-size: 11px; padding: 3px; }
+        button { background: var(--ut3-green); color: white; border: none; cursor: pointer; padding: 5px; }
+
+        /* GRILLE DE L'EMPLOI DU TEMPS */
         main {
             flex: 1;
-            background: white;
             display: grid;
-            grid-template-columns: 80px repeat(5, 1fr);
-            grid-template-rows: 50px repeat(24, 40px); /* 30 min par ligne */
+            grid-template-columns: 50px repeat(5, 1fr);
+            grid-template-rows: 30px repeat(24, 35px); /* Tranches de 30 min */
+            background: white;
             overflow-y: auto;
             position: relative;
         }
 
-        .header-cell {
-            position: sticky; top: 0; background: #f1f5f9;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; border-bottom: 1px solid var(--border);
-            border-right: 1px solid var(--border); z-index: 10;
+        .grid-header {
+            background: #f8f8f8;
+            border: 0.5px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            position: sticky; top: 0; z-index: 10;
         }
 
-        .time-cell {
-            grid-column: 1; border-right: 1px solid var(--border);
-            border-bottom: 1px dotted #e2e8f0;
-            display: flex; justify-content: center; padding-top: 5px;
-            font-size: 0.75rem; color: #94a3b8;
+        .time-label {
+            grid-column: 1;
+            border: 0.5px solid #eee;
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            padding-top: 2px;
         }
 
-        .grid-line {
-            border-bottom: 1px solid #f1f5f9;
-            grid-column: 2 / span 5;
-        }
+        .cell { border: 0.5px solid #eee; }
 
-        /* Cartes des cours */
-        .card {
-            margin: 2px 5px;
-            padding: 10px;
-            border-radius: 8px;
-            color: white;
-            font-size: 0.8rem;
+        /* CARTES DE COURS STYLE CELCAT */
+        .course-box {
+            margin: 1px;
+            padding: 4px;
+            font-size: 10px;
+            color: black;
+            border: 1px solid rgba(0,0,0,0.1);
             position: relative;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            animation: fadeIn 0.3s ease;
+            overflow: hidden;
+            line-height: 1.2;
+            z-index: 5;
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card.cours { background: var(--cours); border-left: 5px solid #4f46e5; }
-        .card.td { background: var(--td); border-left: 5px solid #e11d48; }
-        .card.tp { background: var(--tp); border-left: 5px solid #059669; }
-
-        .card .title { font-weight: 800; display: block; margin-bottom: 3px; }
-        .card .info { font-size: 0.75rem; opacity: 0.9; }
+        .course-box strong { display: block; margin-bottom: 2px; }
+        .course-box.cours { background-color: var(--cours-blue); }
+        .course-box.td { background-color: var(--td-red); }
+        .course-box.tp { background-color: var(--tp-teal); }
 
         .del-btn {
-            position: absolute; top: 5px; right: 5px;
-            background: rgba(0,0,0,0.1); border: none; color: white;
-            width: 20px; height: 20px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 0; right: 0;
+            background: rgba(0,0,0,0.2); border: none; font-size: 8px; cursor: pointer;
         }
-        .del-btn:hover { background: rgba(0,0,0,0.3); }
-
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:1.5rem;">📅</span>
-        <h1 style="font-size:1.2rem; margin:0;">FSI - Emploi du Temps</h1>
-    </div>
-    <button onclick="clearStorage()" style="font-size:0.7rem; background:none; border:1px solid #ccc; cursor:pointer; padding:5px; border-radius:5px;">Réinitialiser tout</button>
+    <div class="logo-area">Université de Toulouse</div>
+    <nav>
+        <span>Accueil</span> | <span>Sélecteur de dates</span> | <span>Filtre d'événements</span> | <span>Partager</span>
+    </nav>
+    <div style="margin-left: auto; font-size: 11px;">Déconnexion - 22506567</div>
 </header>
 
 <div class="layout">
     <aside>
-        <div class="form-group">
-            <label>Matière</label>
-            <input type="text" id="name" placeholder="ex: Algorithmique 1">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Événement</div>
+            <div class="sidebar-content" style="color:#888;">(aucun sélectionné)</div>
         </div>
-        <div class="form-group">
-            <label>Salle / Prof</label>
-            <input type="text" id="room" placeholder="ex: Amphi COTTON">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Étudiant</div>
+            <div class="sidebar-content">
+                <strong>BONPART NIELS (22506567)</strong><br>
+                Département: FSI<br>
+                Url: <span style="color:blue; text-decoration: underline;">Lien ENT</span>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Jour</label>
-            <select id="day">
+        
+        <div class="admin-panel">
+            <div style="font-weight:bold; margin-bottom:5px;">Outils d'édition</div>
+            <input type="text" id="cName" placeholder="Matière (ex: Algo 1)">
+            <input type="text" id="cRoom" placeholder="Salle (ex: Cotton)">
+            <select id="cDay">
                 <option value="2">Lundi</option>
                 <option value="3">Mardi</option>
                 <option value="4">Mercredi</option>
                 <option value="5">Jeudi</option>
                 <option value="6">Vendredi</option>
             </select>
-        </div>
-        <div class="form-group">
-            <label>Début</label>
-            <select id="start"></select>
-        </div>
-        <div class="form-group">
-            <label>Durée</label>
-            <select id="duration">
-                <option value="2">1h00</option>
+            <select id="cStart"></select>
+            <select id="cDuration">
                 <option value="3">1h30</option>
                 <option value="4">2h00</option>
                 <option value="6">3h00</option>
             </select>
-        </div>
-        <div class="form-group">
-            <label>Type</label>
-            <select id="type">
-                <option value="cours">Cours (Bleu)</option>
-                <option value="td">TD (Rose)</option>
-                <option value="tp">TP (Vert)</option>
+            <select id="cType">
+                <option value="cours">Cours</option>
+                <option value="td">TD</option>
+                <option value="tp">TP</option>
             </select>
+            <button onclick="addCourse()">Ajouter le cours</button>
         </div>
-        <button class="btn-add" onclick="createCourse()">Ajouter au planning</button>
     </aside>
 
     <main id="grid">
-        <div class="header-cell"></div>
-        <div class="header-cell">Lundi</div>
-        <div class="header-cell">Mardi</div>
-        <div class="header-cell">Mercredi</div>
-        <div class="header-cell">Jeudi</div>
-        <div class="header-cell">Vendredi</div>
+        <div class="grid-header"></div>
+        <div class="grid-header">lun.</div>
+        <div class="grid-header">mar.</div>
+        <div class="grid-header">mer.</div>
+        <div class="grid-header">jeu.</div>
+        <div class="grid-header">ven.</div>
     </main>
 </div>
 
 <script>
     const grid = document.getElementById('grid');
-    const startSelect = document.getElementById('start');
-    let courses = JSON.parse(localStorage.getItem('myCourses')) || [];
+    const startSel = document.getElementById('cStart');
+    let data = JSON.parse(localStorage.getItem('celcat_fake')) || [];
 
-    // Initialisation de la grille
     function init() {
         let row = 2;
-        for (let h = 8; h < 20; h++) {
+        for (let h = 7; h < 20; h++) {
             for (let m of ['00', '30']) {
-                const timeLabel = document.createElement('div');
-                timeLabel.className = 'time-cell';
-                timeLabel.style.gridRow = row;
-                timeLabel.innerText = m === '00' ? h + 'h' : '';
-                grid.appendChild(timeLabel);
+                const lbl = document.createElement('div');
+                lbl.className = 'time-label';
+                lbl.style.gridRow = row;
+                lbl.innerText = m === '00' ? h + ':00' : '';
+                grid.appendChild(lbl);
 
                 const opt = document.createElement('option');
                 opt.value = row;
-                opt.innerText = h + 'h' + m;
-                startSelect.appendChild(opt);
-
-                const line = document.createElement('div');
-                line.className = 'grid-line';
-                line.style.gridRow = row;
-                grid.appendChild(line);
-
+                opt.innerText = h + ':' + m;
+                startSel.appendChild(opt);
                 row++;
             }
         }
-        renderCourses();
+        render();
     }
 
-    function createCourse() {
-        const course = {
+    function addCourse() {
+        const item = {
             id: Date.now(),
-            name: document.getElementById('name').value || 'Cours',
-            room: document.getElementById('room').value || 'Salle NC',
-            day: document.getElementById('day').value,
-            start: document.getElementById('start').value,
-            duration: document.getElementById('duration').value,
-            type: document.getElementById('type').value
+            name: document.getElementById('cName').value || 'Cours',
+            room: document.getElementById('cRoom').value || 'Amphi',
+            day: document.getElementById('cDay').value,
+            start: document.getElementById('cStart').value,
+            dur: document.getElementById('cDuration').value,
+            type: document.getElementById('cType').value
         };
-        courses.push(course);
-        save();
-        renderCourses();
-        document.getElementById('name').value = '';
+        data.push(item);
+        localStorage.setItem('celcat_fake', JSON.stringify(data));
+        render();
     }
 
-    function renderCourses() {
-        // On nettoie les anciennes cartes
-        document.querySelectorAll('.card').forEach(c => c.remove());
-        
-        courses.forEach(c => {
-            const card = document.createElement('div');
-            card.className = `card ${c.type}`;
-            card.style.gridColumn = c.day;
-            card.style.gridRow = `${c.start} / span ${c.duration}`;
-            card.innerHTML = `
-                <button class="del-btn" onclick="deleteCourse(${c.id})">×</button>
-                <span class="title">${c.name}</span>
-                <span class="info">${c.room}</span>
+    function render() {
+        document.querySelectorAll('.course-box').forEach(b => b.remove());
+        data.forEach(d => {
+            const box = document.createElement('div');
+            box.className = `course-box ${d.type}`;
+            box.style.gridColumn = d.day;
+            box.style.gridRow = `${d.start} / span ${d.dur}`;
+            box.innerHTML = `
+                <button class="del-btn" onclick="removeC(${d.id})">x</button>
+                <strong>${d.name}</strong>
+                ${d.room}<br>
+                FSI / Bât. 3A
             `;
-            grid.appendChild(card);
+            grid.appendChild(box);
         });
     }
 
-    function deleteCourse(id) {
-        courses = courses.filter(c => c.id !== id);
-        save();
-        renderCourses();
-    }
-
-    function save() {
-        localStorage.setItem('myCourses', JSON.stringify(courses));
-    }
-
-    function clearStorage() {
-        if(confirm("Tout effacer ?")) {
-            localStorage.clear();
-            location.reload();
-        }
+    function removeC(id) {
+        data = data.filter(x => x.id !== id);
+        localStorage.setItem('celcat_fake', JSON.stringify(data));
+        render();
     }
 
     init();
 </script>
-
 </body>
 </html>
