@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar - Université de Toulouse</title>
+    <title>CELCAT Calendar</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -14,6 +14,7 @@
             --tp-teal: #64b4a1;
             --text-main: #333333;
             --header-height: 50px;
+            --today-bg: #fff9e6; /* Couleur jaunâtre pour le jour actuel */
         }
 
         body {
@@ -104,23 +105,18 @@
 
         .grid-wrapper { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 60px repeat(7, 1fr); grid-template-rows: 35px repeat(28, 35px); position: relative; }
         .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
+        
+        /* STYLE DU JOUR ACTUEL */
+        .today-highlight {
+            background-color: var(--today-bg) !important;
+        }
+
         .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 10px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
-        /* --- STYLE DES COURS MIS À JOUR AVEC BORDURES NOIRES ET ARRONDIS --- */
         .course-box { 
-            margin: 1px 2px; 
-            padding: 5px; 
-            font-size: 10px; 
-            color: #000; 
-            border: 1px solid #000; /* Bordure noire fine */
-            border-radius: 4px;    /* Pointes arrondies */
-            position: relative; 
-            z-index: 5; 
-            line-height: 1.2;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin: 1px 2px; padding: 5px; font-size: 10px; color: #000; border: 1px solid #000; 
+            border-radius: 4px; position: relative; z-index: 5; line-height: 1.2;
+            overflow: hidden; display: flex; flex-direction: column; box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         .course-box.cours { background-color: var(--cours-blue); }
         .course-box.td { background-color: var(--td-red); }
@@ -142,9 +138,7 @@
 
 <header>
     <div class="logo-area">Université de Toulouse</div>
-    <nav>
-        <span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span>
-    </nav>
+    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span></nav>
     <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
 </header>
 
@@ -153,9 +147,9 @@
         <div class="tab-trigger" onclick="toggleDrawer()" title="Éditeur de planning">⚙️</div>
         <div class="admin-panel">
             <h4>Éditeur de Planning</h4>
-            <input type="text" id="cName" placeholder="Nom du cours (ex: Algorithmique 1)">
-            <input type="text" id="cRoom" placeholder="Salle (ex: U3-103)">
-            <input type="text" id="cProf" placeholder="Nom du Prof (ex: PERRY VERONIQUE)">
+            <input type="text" id="cName" placeholder="Nom du cours">
+            <input type="text" id="cRoom" placeholder="Salle">
+            <input type="text" id="cProf" placeholder="Nom du Prof">
             <select id="cDay">
                 <option value="2">Lundi</option><option value="3">Mardi</option>
                 <option value="4">Mercredi</option><option value="5">Jeudi</option>
@@ -203,13 +197,13 @@
 
         <div class="grid-wrapper" id="grid">
             <div class="grid-header"></div>
-            <div class="grid-header">lun. <span id="d1"></span></div>
-            <div class="grid-header">mar. <span id="d2"></span></div>
-            <div class="grid-header">mer. <span id="d3"></span></div>
-            <div class="grid-header">jeu. <span id="d4"></span></div>
-            <div class="grid-header">ven. <span id="d5"></span></div>
-            <div class="grid-header">sam. <span id="d6"></span></div>
-            <div class="grid-header">dim. <span id="d7"></span></div>
+            <div class="grid-header" id="col-1">lun. <span id="d1"></span></div>
+            <div class="grid-header" id="col-2">mar. <span id="d2"></span></div>
+            <div class="grid-header" id="col-3">mer. <span id="d3"></span></div>
+            <div class="grid-header" id="col-4">jeu. <span id="d4"></span></div>
+            <div class="grid-header" id="col-5">ven. <span id="d5"></span></div>
+            <div class="grid-header" id="col-6">sam. <span id="d6"></span></div>
+            <div class="grid-header" id="col-7">dim. <span id="d7"></span></div>
         </div>
     </div>
 </div>
@@ -218,7 +212,7 @@
     const grid = document.getElementById('grid');
     const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_replica_final')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_replica_vfinal')) || [];
 
     function toggleDrawer() { drawer.classList.toggle('open'); }
 
@@ -237,13 +231,30 @@
 
     function updateDates() {
         const today = new Date();
-        const monday = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
+        const dayOfWeek = today.getDay(); 
+        const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const monday = new Date(today.setDate(diffToMonday));
         const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
+        
         document.getElementById('dateDisplay').innerText = `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} 2026`;
+
         for(let i=0; i<7; i++) {
             let d = new Date(new Date(monday).setDate(monday.getDate() + i));
             document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
         }
+        
+        // --- LOGIQUE DU JOUR ACTUEL ---
+        const currentDay = new Date().getDay(); // 0 (Dim) à 6 (Sam)
+        const dayIndex = currentDay === 0 ? 7 : currentDay; // Convertir Dimanche en 7, Lundi en 1
+        
+        // Surligner le header
+        document.getElementById(`col-${dayIndex}`).classList.add('today-highlight');
+        
+        // Surligner toutes les cellules de la colonne
+        document.querySelectorAll('.cell-day-' + dayIndex).forEach(cell => {
+            cell.classList.add('today-highlight');
+        });
+
         document.getElementById('miniCal').innerHTML = `<div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div><div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>`;
     }
 
@@ -256,14 +267,33 @@
 
     function init() {
         checkIdentity(); updateDates();
+        const currentDay = new Date().getDay();
+        const dayIndex = currentDay === 0 ? 7 : currentDay;
+
         for (let h = 7; h < 21; h++) {
             for (let m of ['00', '30']) {
-                const o = document.createElement('option');
-                o.value = (h-7)*2 + (m === '30' ? 3 : 2); o.innerText = h + ':' + m;
-                startH.appendChild(o);
+                const oValue = (h-7)*2 + (m === '30' ? 3 : 2);
+                
+                // Label heure
                 const l = document.createElement('div');
-                l.className = 'time-label'; l.style.gridRow = o.value; l.innerText = m === '00' ? h + ':00' : '';
+                l.className = 'time-label'; l.style.gridRow = oValue;
+                l.innerText = m === '00' ? h + ':00' : '';
                 grid.appendChild(l);
+
+                // Options select
+                const o = document.createElement('option');
+                o.value = oValue; o.innerText = h + ':' + m;
+                startH.appendChild(o);
+
+                // Créer les cellules de fond pour les 7 jours
+                for (let d = 1; d <= 7; d++) {
+                    const cell = document.createElement('div');
+                    cell.style.gridRow = oValue;
+                    cell.style.gridColumn = d + 1;
+                    cell.style.border = '0.5px solid #efefef';
+                    if (d === dayIndex) cell.classList.add('today-highlight');
+                    grid.appendChild(cell);
+                }
             }
         }
         render();
@@ -272,22 +302,8 @@
     function addCourse() {
         const startRow = parseInt(document.getElementById('cStartH').value);
         const duration = parseInt(document.getElementById('cDur').value);
-        const endRow = startRow + duration;
-
-        courses.push({ 
-            id: Date.now(), 
-            name: document.getElementById('cName').value || 'Matière', 
-            room: document.getElementById('cRoom').value || 'Salle', 
-            prof: document.getElementById('cProf').value || 'Professeur',
-            day: document.getElementById('cDay').value, 
-            start: startRow,
-            startTime: rowToTime(startRow),
-            endTime: rowToTime(endRow),
-            dur: duration, 
-            type: document.getElementById('cType').value 
-        });
-        localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); 
-        render();
+        courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', prof: document.getElementById('cProf').value || 'Prof', day: document.getElementById('cDay').value, start: startRow, startTime: rowToTime(startRow), endTime: rowToTime(startRow + duration), dur: duration, type: document.getElementById('cType').value });
+        localStorage.setItem('celcat_replica_vfinal', JSON.stringify(courses)); render();
     }
 
     function render() {
@@ -296,20 +312,12 @@
             const b = document.createElement('div');
             b.className = `course-box ${c.type.toLowerCase()}`;
             b.style.gridColumn = c.day; b.style.gridRow = `${c.start} / span ${c.dur}`;
-            
-            b.innerHTML = `
-                <div class="time-info">${c.startTime} - ${c.endTime}</div>
-                <div class="type-info">${c.type}</div>
-                <div class="title-info">KINXPA11 - ${c.name}</div>
-                <div class="room-info">FSI / ${c.room}</div>
-                <div class="prof-info">${c.prof}</div>
-                <button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>
-            `;
+            b.innerHTML = `<div class="time-info">${c.startTime} - ${c.endTime}</div><div class="type-info">${c.type}</div><div class="title-info">KINXPA11 - ${c.name}</div><div class="room-info">FSI / ${c.room}</div><div class="prof-info">${c.prof}</div><button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>`;
             grid.appendChild(b);
         });
     }
 
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); render(); }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_replica_vfinal', JSON.stringify(courses)); render(); }
 
     init();
 </script>
