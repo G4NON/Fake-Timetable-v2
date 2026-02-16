@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar</title>
+    <title>CELCAT Calendar - Université de Toulouse</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -106,7 +106,6 @@
         .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
         .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 10px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
-        /* --- STYLE DES COURS MIS À JOUR (IMAGE 8beede) --- */
         .course-box { 
             margin: 1px 2px; 
             padding: 5px; 
@@ -128,7 +127,7 @@
         .course-box .type-info { font-weight: bold; margin-bottom: 1px; }
         .course-box .title-info { margin-bottom: 1px; }
         .course-box .room-info { margin-bottom: 1px; }
-        .course-box .group-info { font-size: 9px; }
+        .course-box .prof-info { font-size: 9px; font-style: italic; }
 
         .del-btn { position: absolute; bottom: 3px; right: 3px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 11px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 2px; opacity: 0; transition: opacity 0.2s; }
         .course-box:hover .del-btn { opacity: 1; }
@@ -153,7 +152,7 @@
             <h4>Éditeur de Planning</h4>
             <input type="text" id="cName" placeholder="Nom du cours (ex: Algorithmique 1)">
             <input type="text" id="cRoom" placeholder="Salle (ex: U3-103)">
-            <input type="text" id="cGroup" placeholder="Code groupe (ex: INXPA11B1)">
+            <input type="text" id="cProf" placeholder="Nom du Prof (ex: PERRY VERONIQUE)">
             <select id="cDay">
                 <option value="2">Lundi</option><option value="3">Mardi</option>
                 <option value="4">Mercredi</option><option value="5">Jeudi</option>
@@ -216,7 +215,7 @@
     const grid = document.getElementById('grid');
     const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_replica_final')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_prof_v1')) || [];
 
     function toggleDrawer() { drawer.classList.toggle('open'); }
 
@@ -245,7 +244,6 @@
         document.getElementById('miniCal').innerHTML = `<div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div><div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>`;
     }
 
-    // Convertit l'index de ligne en format HH:MM
     function rowToTime(row) {
         let totalMinutes = (row - 2) * 30 + (7 * 60);
         let h = Math.floor(totalMinutes / 60);
@@ -277,7 +275,7 @@
             id: Date.now(), 
             name: document.getElementById('cName').value || 'Matière', 
             room: document.getElementById('cRoom').value || 'Salle', 
-            group: document.getElementById('cGroup').value || 'Groupe',
+            prof: document.getElementById('cProf').value || 'Professeur',
             day: document.getElementById('cDay').value, 
             start: startRow,
             startTime: rowToTime(startRow),
@@ -285,7 +283,7 @@
             dur: duration, 
             type: document.getElementById('cType').value 
         });
-        localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); 
+        localStorage.setItem('celcat_prof_v1', JSON.stringify(courses)); 
         render();
     }
 
@@ -293,24 +291,22 @@
         document.querySelectorAll('.course-box').forEach(b => b.remove());
         courses.forEach(c => {
             const b = document.createElement('div');
-            // Utilisation du type pour la couleur (minuscule pour le CSS)
             b.className = `course-box ${c.type.toLowerCase()}`;
             b.style.gridColumn = c.day; b.style.gridRow = `${c.start} / span ${c.dur}`;
             
-            // Structure identique à l'image 8beede
             b.innerHTML = `
                 <div class="time-info">${c.startTime} - ${c.endTime}</div>
                 <div class="type-info">${c.type}</div>
                 <div class="title-info">KINXPA11 - ${c.name}</div>
                 <div class="room-info">FSI / ${c.room}</div>
-                <div class="group-info">${c.group}</div>
+                <div class="prof-info">${c.prof}</div>
                 <button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>
             `;
             grid.appendChild(b);
         });
     }
 
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); render(); }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_prof_v1', JSON.stringify(courses)); render(); }
 
     init();
 </script>
