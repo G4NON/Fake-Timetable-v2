@@ -40,9 +40,9 @@
         
         .layout { display: flex; flex: 1; overflow: hidden; }
 
-        /* SIDEBAR AGRANDIE */
+        /* SIDEBAR */
         aside {
-            width: 280px; /* Largeur augmentée */
+            width: 280px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-dark);
             display: flex;
@@ -52,15 +52,15 @@
 
         .sidebar-title { 
             background: #e2e8e5; 
-            padding: 10px 15px; /* Plus d'espace */
+            padding: 10px 15px; 
             font-weight: bold; 
-            font-size: 16px; /* Police plus grande */
+            font-size: 16px; 
             border-bottom: 1px solid var(--border-dark);
             color: #444;
         }
         .sidebar-content { 
             padding: 15px; 
-            font-size: 14px; /* Police plus grande */
+            font-size: 14px; 
             line-height: 1.5;
             border-bottom: 1px solid var(--border-dark); 
         }
@@ -77,9 +77,12 @@
 
         /* PANEL ADMIN */
         .admin-panel { padding: 15px; background: white; border-top: 2px solid var(--ut3-green); margin-top: auto; }
-        .admin-panel h4 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; color: var(--ut3-green); }
+        .admin-panel h4 { margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: var(--ut3-green); }
         input, select, button { width: 100%; margin-bottom: 8px; font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 2px; }
-        button { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
+        
+        .btn-valider { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
+        .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; margin-top: 5px; }
+        .btn-pdf:hover { background: #222; }
 
         /* CALENDRIER */
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
@@ -150,6 +153,19 @@
             opacity: 0; transition: opacity 0.2s;
         }
         .course-box:hover .del-btn { opacity: 1; }
+
+        /* --- STYLES POUR L'IMPRESSION PDF --- */
+        @media print {
+            header, aside, .admin-panel, .del-btn, .nav-left, .view-options {
+                display: none !important;
+            }
+            body { background: white; overflow: visible; }
+            .layout { display: block; }
+            .calendar-container { width: 100%; height: auto; }
+            .grid-wrapper { overflow: visible; display: grid !important; height: auto; }
+            .grid-header { position: static; background: #eee !important; color: black !important; }
+            .course-box { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
@@ -160,7 +176,7 @@
 </header>
 
 <div class="layout">
-    <aside>
+    <aside id="sidebar">
         <div class="sidebar-title">Événement</div>
         <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
         
@@ -189,7 +205,8 @@
                 <option value="cours">Cours Magistral</option>
                 <option value="td">TD</option><option value="tp">TP</option>
             </select>
-            <button onclick="addCourse()">Valider</button>
+            <button class="btn-valider" onclick="addCourse()">Valider</button>
+            <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
         </div>
     </aside>
 
@@ -226,7 +243,7 @@
 <script>
     const grid = document.getElementById('grid');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_vfinal_large')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_vfinal_pdf')) || [];
 
     function updateDates() {
         const today = new Date();
@@ -276,7 +293,7 @@
             dur: document.getElementById('cDur').value,
             type: document.getElementById('cType').value
         });
-        localStorage.setItem('celcat_vfinal_large', JSON.stringify(courses));
+        localStorage.setItem('celcat_vfinal_pdf', JSON.stringify(courses));
         render();
     }
 
@@ -294,7 +311,7 @@
 
     function del(id) {
         courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_vfinal_large', JSON.stringify(courses));
+        localStorage.setItem('celcat_vfinal_pdf', JSON.stringify(courses));
         render();
     }
 
