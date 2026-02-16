@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar - Université de Toulouse</title>
+    <title>CELCAT Calendar</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -33,7 +33,7 @@
             padding: 0 15px;
             font-size: 13px;
             height: 38px;
-            z-index: 200; /* Toujours au-dessus */
+            z-index: 200;
         }
 
         .logo-area { font-weight: bold; font-size: 15px; margin-right: 25px; }
@@ -56,28 +56,28 @@
         .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
         .mini-calendar { margin-top: 10px; border: 1px solid #ccc; background: white; text-align: center; width: 60px; border-radius: 3px; overflow: hidden; }
 
-        /* --- TIROIR D'EDITION (CORRIGÉ) --- */
+        /* --- TIROIR D'EDITION (FIXÉ) --- */
         .editor-drawer {
-            position: absolute;
-            left: -320px; 
-            top: 0;
+            position: fixed; /* Changé de absolute à fixed pour ne pas influencer le layout */
+            left: -300px; 
+            top: 38px; /* Sous le header */
             bottom: 0;
             width: 300px;
             background: white;
             border-right: 3px solid var(--ut3-green);
-            z-index: 150; /* Doit être plus haut que la sidebar (10) */
+            z-index: 150; 
             transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 10px 0 20px rgba(0,0,0,0.3);
             padding: 20px;
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
         }
 
         .editor-drawer.open {
             left: 0; 
         }
 
-        /* Languette fixée sur le bord du tiroir */
         .tab-trigger {
             position: absolute;
             right: -40px;
@@ -107,9 +107,9 @@
 
         .grid-wrapper { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 60px repeat(7, 1fr); grid-template-rows: 35px repeat(28, 35px); position: relative; }
         .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
-        .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 11px; text-align: center; padding-top: 6px; background: #f9f9f9; }
+        .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 10px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
-        .course-box { margin: 1px 2px; padding: 7px; font-size: 11px; color: #000; border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3; }
+        .course-box { margin: 1px 2px; padding: 7px; font-size: 10px; color: #000; border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3; }
         .course-box.cours { background-color: var(--cours-blue); }
         .course-box.td { background-color: var(--td-red); }
         .course-box.tp { background-color: var(--tp-teal); }
@@ -168,9 +168,9 @@
     <div class="calendar-container">
         <div class="calendar-top-bar">
             <div style="display:flex; gap:8px;">
-                <button class="btn-celcat" style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">Aujourd'hui</button>
-                <button class="btn-celcat" style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&lt;</button>
-                <button class="btn-celcat" style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&gt;</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">Aujourd'hui</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&lt;</button>
+                <button style="background:#f9f9f9; border:1px solid #ccc; padding:4px 8px; font-size:11px; cursor:pointer;">&gt;</button>
             </div>
             <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
             <div style="display:flex; border:1px solid #ccc; border-radius:3px; overflow:hidden;">
@@ -197,7 +197,7 @@
     const grid = document.getElementById('grid');
     const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v_final_fix')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_v_fixed_drawer')) || [];
 
     function toggleDrawer() { drawer.classList.toggle('open'); }
 
@@ -216,9 +216,7 @@
 
     function updateDates() {
         const today = new Date();
-        const dayOfWeek = today.getDay(); 
-        const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const monday = new Date(today.setDate(diffToMonday));
+        const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
         const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
         document.getElementById('dateDisplay').innerText = `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} 2026`;
         for(let i=0; i<7; i++) {
@@ -245,7 +243,7 @@
 
     function addCourse() {
         courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', day: document.getElementById('cDay').value, start: document.getElementById('cStartH').value, dur: document.getElementById('cDur').value, type: document.getElementById('cType').value });
-        localStorage.setItem('celcat_v_final_fix', JSON.stringify(courses)); render();
+        localStorage.setItem('celcat_v_fixed_drawer', JSON.stringify(courses)); render();
     }
 
     function render() {
@@ -259,7 +257,7 @@
         });
     }
 
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_final_fix', JSON.stringify(courses)); render(); }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_fixed_drawer', JSON.stringify(courses)); render(); }
 
     init();
 </script>
