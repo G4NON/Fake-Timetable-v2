@@ -82,6 +82,7 @@
         input, select, button { width: 100%; margin-bottom: 8px; font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 2px; }
         .btn-valider { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
         .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; margin-top: 5px; }
+        .btn-reset { background: white; color: #888; font-size: 10px; border: none; cursor: pointer; text-decoration: underline; margin-top: 5px; }
 
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
 
@@ -113,7 +114,6 @@
         .btn-view { border: none; border-right: 1px solid #ccc; background: #fdfdfd; padding: 5px 12px; font-size: 12px; cursor: pointer; }
         .btn-active { background: #dcdcdc !important; font-weight: bold; }
 
-        /* GRILLE ÉTENDUE À 7 COLONNES (LUNDI À DIMANCHE) */
         .grid-wrapper { 
             flex: 1; overflow-y: auto; display: grid; 
             grid-template-columns: 60px repeat(7, 1fr); 
@@ -170,7 +170,7 @@
     <nav>
         <span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span>
     </nav>
-    <div class="user-info">👤 Déconnexion - 22506567</div>
+    <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
 </header>
 
 <div class="layout">
@@ -179,7 +179,7 @@
         <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
         <div class="sidebar-title">Étudiant</div>
         <div class="sidebar-content">
-            <strong style="font-size: 15px;">BONPART NIELS (22506567)</strong><br>
+            <strong id="sideUserName" style="font-size: 15px;">NOM PRENOM ([NUMERO])</strong><br>
             Département: FSI / Licence<br>
             <div class="mini-calendar" id="miniCal"></div>
         </div>
@@ -202,6 +202,7 @@
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
             <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
+            <button class="btn-reset" onclick="resetIdentity()">Changer d'identité</button>
         </div>
     </aside>
 
@@ -233,8 +234,44 @@
 <script>
     const grid = document.getElementById('grid');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v7days')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_identity_v1')) || [];
 
+    // --- LOGIQUE D'IDENTITÉ ---
+    function checkIdentity() {
+        let name = localStorage.getItem('studentName');
+        let number = localStorage.getItem('studentNumber');
+
+        if (!name || !number) {
+            name = prompt("Entrez votre Prénom et NOM (ex: Niels BONPART) :");
+            number = prompt("Entrez votre Numéro Étudiant (ex: 22506567) :");
+            
+            if(name && number) {
+                localStorage.setItem('studentName', name.toUpperCase());
+                localStorage.setItem('studentNumber', number);
+            } else {
+                // Valeurs par défaut si annulation
+                localStorage.setItem('studentName', "ETUDIANT INCONNU");
+                localStorage.setItem('studentNumber', "00000000");
+            }
+        }
+        applyIdentity();
+    }
+
+    function applyIdentity() {
+        const name = localStorage.getItem('studentName');
+        const number = localStorage.getItem('studentNumber');
+        
+        document.getElementById('topUserInfo').innerText = `👤 Déconnexion - ${number}`;
+        document.getElementById('sideUserName').innerText = `${name} (${number})`;
+    }
+
+    function resetIdentity() {
+        localStorage.removeItem('studentName');
+        localStorage.removeItem('studentNumber');
+        location.reload();
+    }
+
+    // --- LOGIQUE DE DATE ---
     function updateDates() {
         const today = new Date();
         const dayOfWeek = today.getDay(); 
@@ -257,6 +294,7 @@
     }
 
     function init() {
+        checkIdentity();
         let row = 2;
         for (let h = 7; h < 21; h++) {
             for (let m of ['00', '30']) {
@@ -283,7 +321,7 @@
             dur: document.getElementById('cDur').value,
             type: document.getElementById('cType').value
         });
-        localStorage.setItem('celcat_v7days', JSON.stringify(courses));
+        localStorage.setItem('celcat_identity_v1', JSON.stringify(courses));
         render();
     }
 
@@ -301,7 +339,7 @@
 
     function del(id) {
         courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_v7days', JSON.stringify(courses));
+        localStorage.setItem('celcat_identity_v1', JSON.stringify(courses));
         render();
     }
 
