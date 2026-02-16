@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar</title>
+    <title>CELCAT Calendar - Université de Toulouse</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -33,23 +33,52 @@
             padding: 0 15px;
             font-size: 13px;
             height: 38px;
+            z-index: 100;
         }
 
         .logo-area { font-weight: bold; font-size: 15px; margin-right: 25px; }
         nav { display: flex; align-items: center; }
         nav span { margin: 0 12px; cursor: pointer; opacity: 0.9; white-space: nowrap; }
-        nav span:hover { text-decoration: underline; }
         .user-info { margin-left: auto; font-size: 11px; display: flex; align-items: center; gap: 5px; }
 
-        .layout { display: flex; flex: 1; overflow: hidden; }
+        .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
 
+        /* --- SYSTÈME DE LANGUETTE ET COULISSEMENT --- */
         aside {
-            width: 280px;
+            width: 300px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-dark);
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            position: absolute;
+            left: -300px; /* Caché par défaut */
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Animation fluide */
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        aside.open {
+            left: 0; /* Apparaît au clic */
+        }
+
+        .tab-trigger {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 80px;
+            background: var(--ut3-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+            font-size: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
         }
 
         .sidebar-title { 
@@ -58,33 +87,16 @@
             font-weight: bold; 
             font-size: 16px; 
             border-bottom: 1px solid var(--border-dark);
-            color: #444;
         }
-        .sidebar-content { 
-            padding: 15px; 
-            font-size: 14px; 
-            line-height: 1.5;
-            border-bottom: 1px solid var(--border-dark); 
-        }
-
-        .mini-calendar {
-            margin-top: 10px;
-            border: 1px solid #ccc;
-            background: white;
-            text-align: center;
-            width: 60px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
+        .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
 
         .admin-panel { padding: 15px; background: white; border-top: 2px solid var(--ut3-green); margin-top: auto; }
-        .admin-panel h4 { margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: var(--ut3-green); }
         input, select, button { width: 100%; margin-bottom: 8px; font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 2px; }
         .btn-valider { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
-        .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; margin-top: 5px; }
-        .btn-reset { background: white; color: #888; font-size: 10px; border: none; cursor: pointer; text-decoration: underline; margin-top: 5px; }
+        .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; }
 
-        .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
+        /* CALENDRIER */
+        .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; margin-left: 0; }
 
         .calendar-top-bar {
             padding: 8px 15px;
@@ -92,27 +104,9 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--border-dark);
-            background: #ffffff;
         }
 
-        .nav-left { display: flex; align-items: center; gap: 8px; }
-        .btn-celcat { 
-            background: linear-gradient(to bottom, #ffffff 0%, #f2f2f2 100%);
-            border: 1px solid #cccccc;
-            padding: 4px 10px;
-            font-size: 12px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .group-arrows { display: flex; border-radius: 3px; overflow: hidden; border: 1px solid #ccc; }
-        .group-arrows button { border: none; border-right: 1px solid #ccc; padding: 4px 12px; background: #fdfdfd; cursor: pointer; font-weight: bold; }
-
-        .current-date-display { font-size: 18px; font-weight: bold; color: #222; display: flex; align-items: center; gap: 6px; }
-
-        .view-options { display: flex; border: 1px solid #ccc; border-radius: 3px; overflow: hidden; }
-        .btn-view { border: none; border-right: 1px solid #ccc; background: #fdfdfd; padding: 5px 12px; font-size: 12px; cursor: pointer; }
-        .btn-active { background: #dcdcdc !important; font-weight: bold; }
+        .current-date-display { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
 
         .grid-wrapper { 
             flex: 1; overflow-y: auto; display: grid; 
@@ -128,38 +122,22 @@
             position: sticky; top: 0; z-index: 20;
         }
 
-        .time-label { 
-            grid-column: 1; border: 0.5px solid #efefef; 
-            font-size: 11px; color: #888; text-align: center; padding-top: 6px;
-            background: #f9f9f9;
-        }
+        .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 11px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
         .course-box {
             margin: 1px 2px; padding: 7px; font-size: 11px; color: #000; border-radius: 1px;
             border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3;
-            box-shadow: 1px 1px 1px rgba(0,0,0,0.05);
         }
         .course-box.cours { background-color: var(--cours-blue); }
         .course-box.td { background-color: var(--td-red); }
         .course-box.tp { background-color: var(--tp-teal); }
         
-        .del-btn { 
-            position: absolute; bottom: 2px; right: 2px; 
-            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.1); 
-            cursor: pointer; font-size: 10px; width: 18px; height: 18px;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.2s;
-        }
+        .del-btn { position: absolute; bottom: 2px; right: 2px; background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 10px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0; }
         .course-box:hover .del-btn { opacity: 1; }
 
         @media print {
-            header, aside, .del-btn, .nav-left, .view-options { display: none !important; }
-            body { background: white; overflow: visible; }
-            .layout { display: block; }
-            .calendar-container { width: 100%; height: auto; }
-            .grid-wrapper { overflow: visible; display: grid !important; height: auto; }
-            .grid-header { position: static; background: #eee !important; color: black !important; }
-            .course-box { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
+            aside, .tab-trigger, header { display: none !important; }
+            .calendar-container { width: 100%; }
         }
     </style>
 </head>
@@ -167,24 +145,22 @@
 
 <header>
     <div class="logo-area">Université de Toulouse</div>
-    <nav>
-        <span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span>
-    </nav>
-    <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
+    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span></nav>
+    <div class="user-info" id="topUserInfo">👤 Déconnexion</div>
 </header>
 
 <div class="layout">
-    <aside>
-        <div class="sidebar-title">Événement</div>
-        <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
+    <aside id="sidebar">
+        <div class="tab-trigger" onclick="toggleSidebar()" title="Options d'édition">⚙️</div>
+        
         <div class="sidebar-title">Étudiant</div>
         <div class="sidebar-content">
-            <strong id="sideUserName" style="font-size: 15px;">NOM PRENOM ([NUMERO])</strong><br>
-            Département: FSI / Licence<br>
-            <div class="mini-calendar" id="miniCal"></div>
+            <strong id="sideUserName" style="font-size: 15px;">Chargement...</strong><br>
+            Département: FSI / Licence
         </div>
+        
         <div class="admin-panel">
-            <h4>Ajouter un cours</h4>
+            <h4>Éditeur de Planning</h4>
             <input type="text" id="cName" placeholder="Matière">
             <input type="text" id="cRoom" placeholder="Salle">
             <select id="cDay">
@@ -202,19 +178,20 @@
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
             <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
-            <button class="btn-reset" onclick="resetIdentity()">Changer d'identité</button>
+            <button style="background:none; border:none; color:#888; text-decoration:underline; font-size:10px; cursor:pointer;" onclick="resetIdentity()">Changer d'identité</button>
         </div>
     </aside>
 
     <div class="calendar-container">
         <div class="calendar-top-bar">
-            <div class="nav-left">
+            <div style="display:flex; gap:8px;">
                 <button class="btn-celcat">Aujourd'hui</button>
-                <div class="group-arrows"><button>&lt;</button><button>&gt;</button></div>
+                <button class="btn-celcat">&lt;</button><button class="btn-celcat">&gt;</button>
             </div>
             <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
-            <div class="view-options">
-                <button class="btn-view">Mois</button><button class="btn-view btn-active">Semaine</button><button class="btn-view">Jour</button><button class="btn-view">Mon planning</button>
+            <div style="display:flex; border:1px solid #ccc; border-radius:3px;">
+                <button class="btn-celcat" style="border:none;">Mois</button>
+                <button class="btn-celcat" style="border:none; background:#dcdcdc; font-weight:bold;">Semaine</button>
             </div>
         </div>
 
@@ -233,82 +210,59 @@
 
 <script>
     const grid = document.getElementById('grid');
+    const sidebar = document.getElementById('sidebar');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_identity_v1')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_v_slide')) || [];
 
-    // --- LOGIQUE D'IDENTITÉ ---
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+    }
+
     function checkIdentity() {
         let name = localStorage.getItem('studentName');
         let number = localStorage.getItem('studentNumber');
-
         if (!name || !number) {
-            name = prompt("Entrez votre Prénom et NOM (ex: John SMITH) :");
-            number = prompt("Entrez votre Numéro Étudiant (ex: 22500000) :");
-            
-            if(name && number) {
-                localStorage.setItem('studentName', name.toUpperCase());
-                localStorage.setItem('studentNumber', number);
-            } else {
-                // Valeurs par défaut si annulation
-                localStorage.setItem('studentName', "ETUDIANT INCONNU");
-                localStorage.setItem('studentNumber', "00000000");
-            }
+            name = prompt("Prénom et NOM :");
+            number = prompt("Numéro Étudiant :");
+            localStorage.setItem('studentName', (name || "Utilisateur").toUpperCase());
+            localStorage.setItem('studentNumber', number || "00000000");
         }
-        applyIdentity();
-    }
-
-    function applyIdentity() {
-        const name = localStorage.getItem('studentName');
-        const number = localStorage.getItem('studentNumber');
-        
-        document.getElementById('topUserInfo').innerText = `👤 Déconnexion - ${number}`;
-        document.getElementById('sideUserName').innerText = `${name} (${number})`;
+        document.getElementById('topUserInfo').innerText = `👤 Déconnexion - ${localStorage.getItem('studentNumber')}`;
+        document.getElementById('sideUserName').innerText = `${localStorage.getItem('studentName')} (${localStorage.getItem('studentNumber')})`;
     }
 
     function resetIdentity() {
-        localStorage.removeItem('studentName');
-        localStorage.removeItem('studentNumber');
+        localStorage.clear();
         location.reload();
     }
 
-    // --- LOGIQUE DE DATE ---
     function updateDates() {
         const today = new Date();
-        const dayOfWeek = today.getDay(); 
-        const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const monday = new Date(today.setDate(diffToMonday));
+        const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
         const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
-        
-        document.getElementById('dateDisplay').innerText = 
-            `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} ${monday.getFullYear()}`;
-
+        document.getElementById('dateDisplay').innerText = `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} 2026`;
         for(let i=0; i<7; i++) {
             let d = new Date(new Date(monday).setDate(monday.getDate() + i));
             document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
         }
-        
-        document.getElementById('miniCal').innerHTML = `
-            <div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div>
-            <div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>
-        `;
     }
 
     function init() {
         checkIdentity();
-        let row = 2;
+        updateDates();
         for (let h = 7; h < 21; h++) {
             for (let m of ['00', '30']) {
+                const o = document.createElement('option');
+                o.value = (h-7)*2 + (m === '30' ? 3 : 2);
+                o.innerText = h + ':' + m;
+                startH.appendChild(o);
                 const l = document.createElement('div');
-                l.className = 'time-label'; l.style.gridRow = row;
+                l.className = 'time-label'; l.style.gridRow = o.value;
                 l.innerText = m === '00' ? h + ':00' : '';
                 grid.appendChild(l);
-                const o = document.createElement('option');
-                o.value = row; o.innerText = h + ':' + m;
-                startH.appendChild(o);
-                row++;
             }
         }
-        updateDates(); render();
+        render();
     }
 
     function addCourse() {
@@ -321,7 +275,7 @@
             dur: document.getElementById('cDur').value,
             type: document.getElementById('cType').value
         });
-        localStorage.setItem('celcat_identity_v1', JSON.stringify(courses));
+        localStorage.setItem('celcat_v_slide', JSON.stringify(courses));
         render();
     }
 
@@ -332,14 +286,14 @@
             b.className = `course-box ${c.type}`;
             b.style.gridColumn = c.day;
             b.style.gridRow = `${c.start} / span ${c.dur}`;
-            b.innerHTML = `<strong>${c.name}</strong>${c.room}<br>FSI / UT3<button class="del-btn" onclick="del(${c.id})">×</button>`;
+            b.innerHTML = `<strong>${c.name}</strong>${c.room}<br>FSI / UT3<button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>`;
             grid.appendChild(b);
         });
     }
 
     function del(id) {
         courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_identity_v1', JSON.stringify(courses));
+        localStorage.setItem('celcat_v_slide', JSON.stringify(courses));
         render();
     }
 
