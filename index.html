@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar - Université de Toulouse</title>
+    <title>CELCAT Calendar</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -242,8 +242,8 @@
         let number = localStorage.getItem('studentNumber');
 
         if (!name || !number) {
-            name = prompt("Entrez votre Prénom et NOM (ex: Niels BONPART) :");
-            number = prompt("Entrez votre Numéro Étudiant (ex: 22506567) :");
+            name = prompt("Entrez votre Prénom et NOM (ex: John Smith) :");
+            number = prompt("Entrez votre Numéro Étudiant (ex: 22500000) :");
             
             if(name && number) {
                 localStorage.setItem('studentName', name.toUpperCase());
