@@ -25,7 +25,7 @@
             overflow: hidden;
         }
 
-        /* HEADER ORIGINAL */
+        /* HEADER */
         header {
             background-color: var(--ut3-green);
             color: white;
@@ -61,7 +61,6 @@
         }
         .sidebar-content { padding: 8px 10px; font-size: 11px; }
 
-        /* MINI CALENDRIER DÉCO */
         .mini-calendar {
             background: white;
             margin: 5px;
@@ -75,21 +74,23 @@
         .admin-panel { padding: 10px; background: #fff; border-top: 2px solid var(--ut3-green); margin-top: auto; }
         .admin-panel h4 { margin: 0 0 10px 0; font-size: 12px; color: var(--ut3-green); }
         input, select, button { width: 100%; margin-bottom: 6px; font-size: 11px; padding: 4px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
-        button { background: var(--ut3-green); color: white; font-weight: bold; cursor: pointer; }
+        button { background: var(--ut3-green); color: white; font-weight: bold; cursor: pointer; border: none; }
 
         /* ZONE CALENDRIER MAIN */
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
 
+        /* BARRE DE NAVIGATION SEMAINE (CENTRÉE) */
         .calendar-top-bar {
             padding: 10px;
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; /* Structure en 3 colonnes pour centrer parfaitement */
             align-items: center;
-            justify-content: center;
-            gap: 20px;
             border-bottom: 1px solid #eee;
         }
 
-        .current-date-display { font-size: 18px; font-weight: bold; }
+        .nav-arrows { display: flex; gap: 5px; }
+        .current-date-display { font-size: 18px; font-weight: bold; text-align: center; }
+        .view-options { display: flex; justify-content: flex-end; }
 
         .btn-view { padding: 4px 10px; font-size: 11px; border: 1px solid #ccc; background: #f9f9f9; cursor: pointer; }
         .btn-active { background: #e2e2e2; font-weight: bold; }
@@ -110,12 +111,13 @@
         .course-box {
             margin: 2px; padding: 6px; font-size: 10px; color: black; border-radius: 2px;
             border: 1px solid rgba(0,0,0,0.1); position: relative; z-index: 5; line-height: 1.3;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.05);
         }
         .course-box.cours { background: var(--cours-blue); }
         .course-box.td { background: var(--td-red); }
         .course-box.tp { background: var(--tp-teal); }
         
-        .del-btn { position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.1); border: none; font-size: 9px; cursor: pointer; }
+        .del-btn { position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.1); border: none; font-size: 9px; cursor: pointer; color: white; }
     </style>
 </head>
 <body>
@@ -139,10 +141,7 @@
             <div class="sidebar-content">
                 <strong>BONPART NIELS (22506567)</strong><br>
                 Département: FSI / Licence<br>
-                <div class="mini-calendar" id="miniCal">
-                    <div style="background:#cc0000; color:white; font-size:9px; font-weight:bold;">FÉVRIER</div>
-                    <div style="font-size:14px; font-weight:bold;">16</div>
-                </div>
+                <div class="mini-calendar" id="miniCal"></div>
             </div>
         </div>
         
@@ -174,12 +173,15 @@
 
     <div class="calendar-container">
         <div class="calendar-top-bar">
-            <div>
+            <div class="nav-arrows">
+                <button class="btn-view" style="font-weight:bold;">Aujourd'hui</button>
                 <button class="btn-view">&lt;</button>
                 <button class="btn-view">&gt;</button>
             </div>
-            <div class="current-date-display" id="dateDisplay">16 – 22 févr. 2026</div>
-            <div style="margin-left:auto;">
+
+            <div class="current-date-display" id="dateDisplay"></div>
+
+            <div class="view-options">
                 <button class="btn-view">Mois</button>
                 <button class="btn-view btn-active">Semaine</button>
                 <button class="btn-view">Jour</button>
@@ -201,12 +203,12 @@
 <script>
     const grid = document.getElementById('grid');
     const startH = document.getElementById('startH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v3')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_vfinal')) || [];
 
     // --- LOGIQUE DE DATE AUTOMATIQUE ---
     function updateDates() {
         const today = new Date();
-        const dayOfWeek = today.getDay(); // 0 (Dim) à 6 (Sam)
+        const dayOfWeek = today.getDay(); 
         const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
         
         const monday = new Date(today.setDate(diffToMonday));
@@ -215,26 +217,23 @@
         const options = { day: 'numeric', month: 'short' };
         const year = monday.getFullYear();
 
-        // Affichage titre : "16 – 22 févr. 2026"
+        // Affichage centré
         document.getElementById('dateDisplay').innerText = 
             `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', options)} ${year}`;
 
-        // Affichage jours colonnes : "16/2", "17/2"...
         for(let i=0; i<5; i++) {
             let d = new Date(new Date(monday).setDate(monday.getDate() + i));
             document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
         }
         
-        // Mini calendrier
         document.getElementById('miniCal').innerHTML = `
-            <div style="background:#cc0000; color:white; font-size:9px; font-weight:bold; text-transform:uppercase;">
+            <div style="background:#cc0000; color:white; font-size:9px; font-weight:bold; text-transform:uppercase; padding:2px;">
                 ${new Intl.DateTimeFormat('fr-FR', {month: 'long'}).format(new Date())}
             </div>
-            <div style="font-size:14px; font-weight:bold;">${new Date().getDate()}</div>
+            <div style="font-size:16px; font-weight:bold; padding:5px;">${new Date().getDate()}</div>
         `;
     }
 
-    // --- INITIALISATION GRILLE ---
     function init() {
         let row = 2;
         for (let h = 7; h < 21; h++) {
@@ -267,7 +266,7 @@
             type: document.getElementById('type').value
         };
         courses.push(c);
-        localStorage.setItem('celcat_v3', JSON.stringify(courses));
+        localStorage.setItem('celcat_vfinal', JSON.stringify(courses));
         render();
     }
 
@@ -279,7 +278,7 @@
             b.style.gridColumn = c.day;
             b.style.gridRow = `${c.start} / span ${c.dur}`;
             b.innerHTML = `
-                <button class="del-btn" onclick="del(${c.id})">x</button>
+                <button class="del-btn" onclick="del(${c.id})">×</button>
                 <strong>${c.name}</strong>
                 ${c.room}<br>
                 FSI / UT3
@@ -290,7 +289,7 @@
 
     function del(id) {
         courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_v3', JSON.stringify(courses));
+        localStorage.setItem('celcat_vfinal', JSON.stringify(courses));
         render();
     }
 
