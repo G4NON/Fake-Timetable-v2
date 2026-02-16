@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar - Université de Toulouse</title>
+    <title>CELCAT Calendar</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -25,6 +25,7 @@
             overflow: hidden;
         }
 
+        /* HEADER ORIGINAL */
         header {
             background-color: var(--ut3-green);
             color: white;
@@ -37,48 +38,19 @@
         }
 
         .logo-area { font-weight: bold; font-size: 15px; margin-right: 25px; }
-        nav { display: flex; align-items: center; }
-        nav span { margin: 0 12px; cursor: pointer; opacity: 0.9; white-space: nowrap; }
+        nav span { margin: 0 12px; cursor: pointer; opacity: 0.9; }
         .user-info { margin-left: auto; font-size: 11px; display: flex; align-items: center; gap: 5px; }
 
         .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-        /* --- SYSTÈME DE LANGUETTE ET COULISSEMENT --- */
+        /* BARRE LATERALE FIXE (IDENTIQUE IMAGE) */
         aside {
-            width: 300px;
+            width: 280px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-dark);
             display: flex;
             flex-direction: column;
-            position: absolute;
-            left: -300px; /* Caché par défaut */
-            top: 0;
-            bottom: 0;
-            z-index: 50;
-            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Animation fluide */
-            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-        }
-
-        aside.open {
-            left: 0; /* Apparaît au clic */
-        }
-
-        .tab-trigger {
-            position: absolute;
-            right: -40px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 80px;
-            background: var(--ut3-green);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 0 8px 8px 0;
-            font-size: 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+            z-index: 10;
         }
 
         .sidebar-title { 
@@ -90,13 +62,53 @@
         }
         .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
 
-        .admin-panel { padding: 15px; background: white; border-top: 2px solid var(--ut3-green); margin-top: auto; }
-        input, select, button { width: 100%; margin-bottom: 8px; font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 2px; }
-        .btn-valider { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
-        .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; }
+        .mini-calendar { margin-top: 10px; border: 1px solid #ccc; background: white; text-align: center; width: 60px; border-radius: 3px; overflow: hidden; }
+
+        /* --- LE PANNEAU COULISSANT (UNIQUEMENT POUR L'EDITION) --- */
+        .editor-drawer {
+            position: absolute;
+            left: -310px; /* Caché derrière la barre latérale */
+            top: 0;
+            bottom: 0;
+            width: 300px;
+            background: white;
+            border-right: 2px solid var(--ut3-green);
+            z-index: 60;
+            transition: left 0.4s ease-in-out;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-drawer.open {
+            left: 0; /* Passe par-dessus la barre latérale au clic */
+        }
+
+        /* La languette qui dépasse du tiroir */
+        .tab-trigger {
+            position: absolute;
+            right: -35px;
+            top: 150px;
+            width: 35px;
+            height: 60px;
+            background: var(--ut3-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            font-size: 18px;
+        }
+
+        .admin-panel h4 { margin: 0 0 15px 0; color: var(--ut3-green); text-transform: uppercase; font-size: 12px; }
+        input, select, button { width: 100%; margin-bottom: 10px; font-size: 13px; padding: 8px; border: 1px solid #ccc; border-radius: 3px; }
+        .btn-valider { background: #f5f5f5; font-weight: bold; cursor: pointer; }
+        .btn-pdf { background: #333; color: white; cursor: pointer; font-weight: bold; }
 
         /* CALENDRIER */
-        .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; margin-left: 0; }
+        .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
 
         .calendar-top-bar {
             padding: 8px 15px;
@@ -115,19 +127,10 @@
             position: relative; 
         }
         
-        .grid-header { 
-            background: #fcfcfc; border: 0.5px solid var(--border-dark); 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 12px; color: #1d3d2e;
-            position: sticky; top: 0; z-index: 20;
-        }
-
+        .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
         .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 11px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
-        .course-box {
-            margin: 1px 2px; padding: 7px; font-size: 11px; color: #000; border-radius: 1px;
-            border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3;
-        }
+        .course-box { margin: 1px 2px; padding: 7px; font-size: 11px; color: #000; border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3; }
         .course-box.cours { background-color: var(--cours-blue); }
         .course-box.td { background-color: var(--td-red); }
         .course-box.tp { background-color: var(--tp-teal); }
@@ -136,8 +139,7 @@
         .course-box:hover .del-btn { opacity: 1; }
 
         @media print {
-            aside, .tab-trigger, header { display: none !important; }
-            .calendar-container { width: 100%; }
+            .editor-drawer, header { display: none !important; }
         }
     </style>
 </head>
@@ -145,20 +147,13 @@
 
 <header>
     <div class="logo-area">Université de Toulouse</div>
-    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span></nav>
+    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span></nav>
     <div class="user-info" id="topUserInfo">👤 Déconnexion</div>
 </header>
 
 <div class="layout">
-    <aside id="sidebar">
-        <div class="tab-trigger" onclick="toggleSidebar()" title="Options d'édition">⚙️</div>
-        
-        <div class="sidebar-title">Étudiant</div>
-        <div class="sidebar-content">
-            <strong id="sideUserName" style="font-size: 15px;">Chargement...</strong><br>
-            Département: FSI / Licence
-        </div>
-        
+    <div class="editor-drawer" id="drawer">
+        <div class="tab-trigger" onclick="toggleDrawer()">⚙️</div>
         <div class="admin-panel">
             <h4>Éditeur de Planning</h4>
             <input type="text" id="cName" placeholder="Matière">
@@ -177,8 +172,19 @@
                 <option value="cours">Cours Magistral</option><option value="td">TD</option><option value="tp">TP</option>
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
-            <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
-            <button style="background:none; border:none; color:#888; text-decoration:underline; font-size:10px; cursor:pointer;" onclick="resetIdentity()">Changer d'identité</button>
+            <button class="btn-pdf" onclick="window.print()">Télécharger PDF</button>
+            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer;" onclick="resetIdentity()">Changer d'identité</button>
+        </div>
+    </div>
+
+    <aside>
+        <div class="sidebar-title">Événement</div>
+        <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
+        <div class="sidebar-title">Étudiant</div>
+        <div class="sidebar-content">
+            <strong id="sideUserName" style="font-size: 15px;">Chargement...</strong><br>
+            Département: FSI / Licence<br>
+            <div class="mini-calendar" id="miniCal"></div>
         </div>
     </aside>
 
@@ -189,9 +195,10 @@
                 <button class="btn-celcat">&lt;</button><button class="btn-celcat">&gt;</button>
             </div>
             <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
-            <div style="display:flex; border:1px solid #ccc; border-radius:3px;">
-                <button class="btn-celcat" style="border:none;">Mois</button>
-                <button class="btn-celcat" style="border:none; background:#dcdcdc; font-weight:bold;">Semaine</button>
+            <div style="display:flex;">
+                <button class="btn-celcat">Mois</button>
+                <button class="btn-celcat" style="background:#dcdcdc; font-weight:bold;">Semaine</button>
+                <button class="btn-celcat">Jour</button>
             </div>
         </div>
 
@@ -210,31 +217,24 @@
 
 <script>
     const grid = document.getElementById('grid');
-    const sidebar = document.getElementById('sidebar');
+    const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v_slide')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_v_final')) || [];
 
-    function toggleSidebar() {
-        sidebar.classList.toggle('open');
-    }
+    function toggleDrawer() { drawer.classList.toggle('open'); }
 
     function checkIdentity() {
-        let name = localStorage.getItem('studentName');
-        let number = localStorage.getItem('studentNumber');
+        let name = localStorage.getItem('studentName'), number = localStorage.getItem('studentNumber');
         if (!name || !number) {
-            name = prompt("Prénom et NOM :");
-            number = prompt("Numéro Étudiant :");
-            localStorage.setItem('studentName', (name || "Utilisateur").toUpperCase());
+            name = prompt("Prénom et NOM :"); number = prompt("Numéro Étudiant :");
+            localStorage.setItem('studentName', (name || "UTILISATEUR").toUpperCase());
             localStorage.setItem('studentNumber', number || "00000000");
         }
         document.getElementById('topUserInfo').innerText = `👤 Déconnexion - ${localStorage.getItem('studentNumber')}`;
         document.getElementById('sideUserName').innerText = `${localStorage.getItem('studentName')} (${localStorage.getItem('studentNumber')})`;
     }
 
-    function resetIdentity() {
-        localStorage.clear();
-        location.reload();
-    }
+    function resetIdentity() { localStorage.clear(); location.reload(); }
 
     function updateDates() {
         const today = new Date();
@@ -245,20 +245,18 @@
             let d = new Date(new Date(monday).setDate(monday.getDate() + i));
             document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
         }
+        document.getElementById('miniCal').innerHTML = `<div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div><div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>`;
     }
 
     function init() {
-        checkIdentity();
-        updateDates();
+        checkIdentity(); updateDates();
         for (let h = 7; h < 21; h++) {
             for (let m of ['00', '30']) {
                 const o = document.createElement('option');
-                o.value = (h-7)*2 + (m === '30' ? 3 : 2);
-                o.innerText = h + ':' + m;
+                o.value = (h-7)*2 + (m === '30' ? 3 : 2); o.innerText = h + ':' + m;
                 startH.appendChild(o);
                 const l = document.createElement('div');
-                l.className = 'time-label'; l.style.gridRow = o.value;
-                l.innerText = m === '00' ? h + ':00' : '';
+                l.className = 'time-label'; l.style.gridRow = o.value; l.innerText = m === '00' ? h + ':00' : '';
                 grid.appendChild(l);
             }
         }
@@ -266,17 +264,8 @@
     }
 
     function addCourse() {
-        courses.push({
-            id: Date.now(),
-            name: document.getElementById('cName').value || 'Cours',
-            room: document.getElementById('cRoom').value || 'Salle',
-            day: document.getElementById('cDay').value,
-            start: document.getElementById('cStartH').value,
-            dur: document.getElementById('cDur').value,
-            type: document.getElementById('cType').value
-        });
-        localStorage.setItem('celcat_v_slide', JSON.stringify(courses));
-        render();
+        courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', day: document.getElementById('cDay').value, start: document.getElementById('cStartH').value, dur: document.getElementById('cDur').value, type: document.getElementById('cType').value });
+        localStorage.setItem('celcat_v_final', JSON.stringify(courses)); render();
     }
 
     function render() {
@@ -284,18 +273,13 @@
         courses.forEach(c => {
             const b = document.createElement('div');
             b.className = `course-box ${c.type}`;
-            b.style.gridColumn = c.day;
-            b.style.gridRow = `${c.start} / span ${c.dur}`;
+            b.style.gridColumn = c.day; b.style.gridRow = `${c.start} / span ${c.dur}`;
             b.innerHTML = `<strong>${c.name}</strong>${c.room}<br>FSI / UT3<button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>`;
             grid.appendChild(b);
         });
     }
 
-    function del(id) {
-        courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_v_slide', JSON.stringify(courses));
-        render();
-    }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_final', JSON.stringify(courses)); render(); }
 
     init();
 </script>
