@@ -25,7 +25,6 @@
             overflow: hidden;
         }
 
-        /* --- HEADER RESTAURÉ (IMAGE 8b0ce5) --- */
         header {
             background-color: var(--ut3-green);
             color: white;
@@ -37,22 +36,13 @@
         }
 
         .logo-area { font-weight: bold; font-size: 15px; margin-right: 25px; }
-        
-        /* Menus de navigation du bandeau vert */
         nav { display: flex; align-items: center; }
-        nav span { 
-            margin: 0 12px; 
-            cursor: pointer; 
-            opacity: 0.9; 
-            white-space: nowrap;
-        }
+        nav span { margin: 0 12px; cursor: pointer; opacity: 0.9; white-space: nowrap; }
         nav span:hover { text-decoration: underline; }
-
         .user-info { margin-left: auto; font-size: 11px; display: flex; align-items: center; gap: 5px; }
 
         .layout { display: flex; flex: 1; overflow: hidden; }
 
-        /* SIDEBAR LARGE */
         aside {
             width: 280px;
             background-color: var(--sidebar-bg);
@@ -87,15 +77,12 @@
             overflow: hidden;
         }
 
-        /* PANEL ADMIN */
         .admin-panel { padding: 15px; background: white; border-top: 2px solid var(--ut3-green); margin-top: auto; }
         .admin-panel h4 { margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: var(--ut3-green); }
         input, select, button { width: 100%; margin-bottom: 8px; font-size: 13px; padding: 6px; border: 1px solid #ccc; border-radius: 2px; }
-        
         .btn-valider { background: #f5f5f5; color: #333; cursor: pointer; font-weight: bold; border: 1px solid #bbb; }
         .btn-pdf { background: #444; color: white; cursor: pointer; font-weight: bold; border: 1px solid #222; margin-top: 5px; }
 
-        /* CALENDRIER */
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
 
         .calendar-top-bar {
@@ -126,9 +113,10 @@
         .btn-view { border: none; border-right: 1px solid #ccc; background: #fdfdfd; padding: 5px 12px; font-size: 12px; cursor: pointer; }
         .btn-active { background: #dcdcdc !important; font-weight: bold; }
 
+        /* GRILLE ÉTENDUE À 7 COLONNES (LUNDI À DIMANCHE) */
         .grid-wrapper { 
             flex: 1; overflow-y: auto; display: grid; 
-            grid-template-columns: 60px repeat(5, 1fr); 
+            grid-template-columns: 60px repeat(7, 1fr); 
             grid-template-rows: 35px repeat(28, 35px);
             position: relative; 
         }
@@ -180,29 +168,21 @@
 <header>
     <div class="logo-area">Université de Toulouse</div>
     <nav>
-        <span>Accueil</span>
-        <span>Sélecteur de dates</span>
-        <span>Filtre d'événements</span>
-        <span>Partager</span>
-        <span>Aide</span>
+        <span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span>
     </nav>
-    <div class="user-info">
-        👤 Déconnexion - 22506567
-    </div>
+    <div class="user-info">👤 Déconnexion - 22506567</div>
 </header>
 
 <div class="layout">
     <aside>
         <div class="sidebar-title">Événement</div>
         <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
-        
         <div class="sidebar-title">Étudiant</div>
         <div class="sidebar-content">
             <strong style="font-size: 15px;">BONPART NIELS (22506567)</strong><br>
             Département: FSI / Licence<br>
             <div class="mini-calendar" id="miniCal"></div>
         </div>
-        
         <div class="admin-panel">
             <h4>Ajouter un cours</h4>
             <input type="text" id="cName" placeholder="Matière">
@@ -210,16 +190,15 @@
             <select id="cDay">
                 <option value="2">Lundi</option><option value="3">Mardi</option>
                 <option value="4">Mercredi</option><option value="5">Jeudi</option>
-                <option value="6">Vendredi</option>
+                <option value="6">Vendredi</option><option value="7">Samedi</option>
+                <option value="8">Dimanche</option>
             </select>
             <select id="cStartH"></select>
             <select id="cDur">
-                <option value="3">1h30</option><option value="4">2h00</option>
-                <option value="6">3h00</option>
+                <option value="3">1h30</option><option value="4">2h00</option><option value="6">3h00</option>
             </select>
             <select id="cType">
-                <option value="cours">Cours Magistral</option>
-                <option value="td">TD</option><option value="tp">TP</option>
+                <option value="cours">Cours Magistral</option><option value="td">TD</option><option value="tp">TP</option>
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
             <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
@@ -232,16 +211,9 @@
                 <button class="btn-celcat">Aujourd'hui</button>
                 <div class="group-arrows"><button>&lt;</button><button>&gt;</button></div>
             </div>
-
-            <div class="current-date-display">
-                <span id="dateDisplay"></span> 📅
-            </div>
-
+            <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
             <div class="view-options">
-                <button class="btn-view">Mois</button>
-                <button class="btn-view btn-active">Semaine</button>
-                <button class="btn-view">Jour</button>
-                <button class="btn-view">Mon planning</button>
+                <button class="btn-view">Mois</button><button class="btn-view btn-active">Semaine</button><button class="btn-view">Jour</button><button class="btn-view">Mon planning</button>
             </div>
         </div>
 
@@ -252,6 +224,8 @@
             <div class="grid-header">mer. <span id="d3"></span></div>
             <div class="grid-header">jeu. <span id="d4"></span></div>
             <div class="grid-header">ven. <span id="d5"></span></div>
+            <div class="grid-header">sam. <span id="d6"></span></div>
+            <div class="grid-header">dim. <span id="d7"></span></div>
         </div>
     </div>
 </div>
@@ -259,7 +233,7 @@
 <script>
     const grid = document.getElementById('grid');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_vfinal_large')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_v7days')) || [];
 
     function updateDates() {
         const today = new Date();
@@ -271,7 +245,7 @@
         document.getElementById('dateDisplay').innerText = 
             `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} ${monday.getFullYear()}`;
 
-        for(let i=0; i<5; i++) {
+        for(let i=0; i<7; i++) {
             let d = new Date(new Date(monday).setDate(monday.getDate() + i));
             document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
         }
@@ -309,7 +283,7 @@
             dur: document.getElementById('cDur').value,
             type: document.getElementById('cType').value
         });
-        localStorage.setItem('celcat_vfinal_large', JSON.stringify(courses));
+        localStorage.setItem('celcat_v7days', JSON.stringify(courses));
         render();
     }
 
@@ -327,7 +301,7 @@
 
     function del(id) {
         courses = courses.filter(x => x.id !== id);
-        localStorage.setItem('celcat_vfinal_large', JSON.stringify(courses));
+        localStorage.setItem('celcat_v7days', JSON.stringify(courses));
         render();
     }
 
