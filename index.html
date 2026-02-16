@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar - Université de Toulouse</title>
+    <title>CELCAT Calendar</title>
     <style>
         :root {
             --ut3-green: #1d3d2e;
@@ -13,7 +13,7 @@
             --td-red: #f88c8c;
             --tp-teal: #64b4a1;
             --text-main: #333333;
-            --header-height: 50px; /* Augmenté pour correspondre à l'image */
+            --header-height: 50px;
         }
 
         body {
@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* --- HEADER VERT LARGE (IMAGE 1 & 2) --- */
         header {
             background-color: var(--ut3-green);
             color: white;
@@ -39,23 +38,12 @@
         }
 
         .logo-area { font-weight: bold; font-size: 18px; margin-right: 30px; }
-        
         nav { display: flex; align-items: center; height: 100%; }
-        nav span { 
-            margin: 0 15px; 
-            cursor: pointer; 
-            opacity: 0.9; 
-            display: flex;
-            align-items: center;
-            height: 100%;
-        }
-        nav span:hover { text-decoration: underline; }
-
+        nav span { margin: 0 15px; cursor: pointer; opacity: 0.9; display: flex; align-items: center; height: 100%; }
         .user-info { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 8px; }
 
         .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-        /* --- BARRE LATERALE FIXE --- */
         aside {
             width: 280px;
             background-color: var(--sidebar-bg);
@@ -69,10 +57,9 @@
         .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
         .mini-calendar { margin-top: 10px; border: 1px solid #ccc; background: white; text-align: center; width: 60px; border-radius: 3px; overflow: hidden; }
 
-        /* --- TIROIR D'EDITION (FIXÉ & CACHÉ) --- */
         .editor-drawer {
             position: fixed;
-            left: -305px; /* Décalé pour être totalement invisible */
+            left: -305px;
             top: var(--header-height);
             bottom: 0;
             width: 300px;
@@ -89,7 +76,6 @@
 
         .editor-drawer.open { left: 0; }
 
-        /* ENGRENAGE EN BAS À GAUCHE */
         .tab-trigger {
             position: absolute;
             right: -42px;
@@ -112,7 +98,6 @@
         .btn-valider { background: #f5f5f5; font-weight: bold; cursor: pointer; border: 1px solid #bbb; }
         .btn-pdf { background: #333; color: white; cursor: pointer; font-weight: bold; border: none; }
 
-        /* CALENDRIER */
         .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
         .calendar-top-bar { padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); background: #fcfcfc; }
         .current-date-display { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
@@ -121,11 +106,30 @@
         .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
         .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 10px; text-align: center; padding-top: 6px; background: #f9f9f9; }
 
-        .course-box { margin: 1px 2px; padding: 7px; font-size: 10px; color: #000; border: 1px solid rgba(0,0,0,0.2); position: relative; z-index: 5; line-height: 1.3; }
+        /* --- STYLE DES COURS MIS À JOUR (IMAGE 8beede) --- */
+        .course-box { 
+            margin: 1px 2px; 
+            padding: 5px; 
+            font-size: 10px; 
+            color: #000; 
+            border: 1px solid rgba(0,0,0,0.4); 
+            position: relative; 
+            z-index: 5; 
+            line-height: 1.2;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
         .course-box.cours { background-color: var(--cours-blue); }
         .course-box.td { background-color: var(--td-red); }
         .course-box.tp { background-color: var(--tp-teal); }
         
+        .course-box .time-info { font-size: 10px; margin-bottom: 2px; }
+        .course-box .type-info { font-weight: bold; margin-bottom: 1px; }
+        .course-box .title-info { margin-bottom: 1px; }
+        .course-box .room-info { margin-bottom: 1px; }
+        .course-box .group-info { font-size: 9px; }
+
         .del-btn { position: absolute; bottom: 3px; right: 3px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 11px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 2px; opacity: 0; transition: opacity 0.2s; }
         .course-box:hover .del-btn { opacity: 1; }
 
@@ -137,11 +141,7 @@
 <header>
     <div class="logo-area">Université de Toulouse</div>
     <nav>
-        <span>Accueil</span>
-        <span>Sélecteur de dates</span>
-        <span>Filtre d'événements</span>
-        <span>Partager</span>
-        <span>Aide</span>
+        <span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span>
     </nav>
     <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
 </header>
@@ -151,8 +151,9 @@
         <div class="tab-trigger" onclick="toggleDrawer()" title="Éditeur de planning">⚙️</div>
         <div class="admin-panel">
             <h4>Éditeur de Planning</h4>
-            <input type="text" id="cName" placeholder="Nom de la matière">
-            <input type="text" id="cRoom" placeholder="Salle / Amphi">
+            <input type="text" id="cName" placeholder="Nom du cours (ex: Algorithmique 1)">
+            <input type="text" id="cRoom" placeholder="Salle (ex: U3-103)">
+            <input type="text" id="cGroup" placeholder="Code groupe (ex: INXPA11B1)">
             <select id="cDay">
                 <option value="2">Lundi</option><option value="3">Mardi</option>
                 <option value="4">Mercredi</option><option value="5">Jeudi</option>
@@ -161,14 +162,14 @@
             </select>
             <select id="cStartH"></select>
             <select id="cDur">
-                <option value="3">1h30</option><option value="4">2h00</option><option value="6">3h00</option>
+                <option value="2">1h00</option><option value="3">1h30</option><option value="4">2h00</option><option value="6">3h00</option>
             </select>
             <select id="cType">
-                <option value="cours">Cours Magistral</option><option value="td">TD</option><option value="tp">TP</option>
+                <option value="Cours">Cours</option><option value="TD">TD</option><option value="TP">TP</option>
             </select>
             <button class="btn-valider" onclick="addCourse()">Valider</button>
-            <button class="btn-pdf" onclick="window.print()">Télécharger le planning (PDF)</button>
-            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer; color: #666;" onclick="resetIdentity()">Changer d'identité étudiant</button>
+            <button class="btn-pdf" onclick="window.print()">Télécharger PDF</button>
+            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer; color: #666;" onclick="resetIdentity()">Changer d'identité</button>
         </div>
     </div>
 
@@ -215,7 +216,7 @@
     const grid = document.getElementById('grid');
     const drawer = document.getElementById('drawer');
     const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_v_final_styled')) || [];
+    let courses = JSON.parse(localStorage.getItem('celcat_replica_final')) || [];
 
     function toggleDrawer() { drawer.classList.toggle('open'); }
 
@@ -244,6 +245,14 @@
         document.getElementById('miniCal').innerHTML = `<div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div><div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>`;
     }
 
+    // Convertit l'index de ligne en format HH:MM
+    function rowToTime(row) {
+        let totalMinutes = (row - 2) * 30 + (7 * 60);
+        let h = Math.floor(totalMinutes / 60);
+        let m = totalMinutes % 60;
+        return (h < 10 ? '0'+h : h) + ':' + (m === 0 ? '00' : m);
+    }
+
     function init() {
         checkIdentity(); updateDates();
         for (let h = 7; h < 21; h++) {
@@ -260,22 +269,48 @@
     }
 
     function addCourse() {
-        courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', day: document.getElementById('cDay').value, start: document.getElementById('cStartH').value, dur: document.getElementById('cDur').value, type: document.getElementById('cType').value });
-        localStorage.setItem('celcat_v_final_styled', JSON.stringify(courses)); render();
+        const startRow = parseInt(document.getElementById('cStartH').value);
+        const duration = parseInt(document.getElementById('cDur').value);
+        const endRow = startRow + duration;
+
+        courses.push({ 
+            id: Date.now(), 
+            name: document.getElementById('cName').value || 'Matière', 
+            room: document.getElementById('cRoom').value || 'Salle', 
+            group: document.getElementById('cGroup').value || 'Groupe',
+            day: document.getElementById('cDay').value, 
+            start: startRow,
+            startTime: rowToTime(startRow),
+            endTime: rowToTime(endRow),
+            dur: duration, 
+            type: document.getElementById('cType').value 
+        });
+        localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); 
+        render();
     }
 
     function render() {
         document.querySelectorAll('.course-box').forEach(b => b.remove());
         courses.forEach(c => {
             const b = document.createElement('div');
-            b.className = `course-box ${c.type}`;
+            // Utilisation du type pour la couleur (minuscule pour le CSS)
+            b.className = `course-box ${c.type.toLowerCase()}`;
             b.style.gridColumn = c.day; b.style.gridRow = `${c.start} / span ${c.dur}`;
-            b.innerHTML = `<strong>${c.name}</strong>${c.room}<br>FSI / UT3<button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>`;
+            
+            // Structure identique à l'image 8beede
+            b.innerHTML = `
+                <div class="time-info">${c.startTime} - ${c.endTime}</div>
+                <div class="type-info">${c.type}</div>
+                <div class="title-info">KINXPA11 - ${c.name}</div>
+                <div class="room-info">FSI / ${c.room}</div>
+                <div class="group-info">${c.group}</div>
+                <button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>
+            `;
             grid.appendChild(b);
         });
     }
 
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_v_final_styled', JSON.stringify(courses)); render(); }
+    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_replica_final', JSON.stringify(courses)); render(); }
 
     init();
 </script>
