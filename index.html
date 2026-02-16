@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Emploi du Temps - Licence FSI</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --grid-border: #e2e8f0;
+            --text-main: #1e293b;
+            --color-cours: #818cf8; /* Bleu */
+            --color-td: #fb7185;    /* Rouge/Rose */
+            --color-tp: #34d399;    /* Vert */
+            --header-height: 60px;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Barre de navigation */
+        header {
+            height: var(--header-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Formulaire d'ajout */
+        aside {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid var(--grid-border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h2 { font-size: 1.2rem; margin-top: 0; }
+        
+        input, select, button {
+            padding: 10px;
+            border: 1px solid var(--grid-border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #1d4ed8; }
+
+        /* Le Calendrier */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            grid-template-rows: 40px repeat(12, 60px); /* 12 heures de 8h à 20h */
+            gap: 1px;
+            background-color: var(--grid-border);
+            border: 1px solid var(--grid-border);
+        }
+
+        .grid-header {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .time-slot {
+            background: white;
+            display: flex;
+            justify-content: center;
+            padding-top: 5px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .grid-cell { background: white; position: relative; }
+
+        /* Style des cartes de cours */
+        .course-card {
+            position: absolute;
+            left: 4px;
+            right: 4px;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 0.8rem;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 2;
+        }
+
+        .course-card.cours { background-color: var(--color-cours); border-left: 4px solid #4f46e5; }
+        .course-card.td { background-color: var(--color-td); border-left: 4px solid #e11d48; }
+        .course-card.tp { background-color: var(--color-tp); border-left: 4px solid #059669; }
+
+        .course-card .title { font-weight: bold; margin-bottom: 2px; }
+        .course-card .room { opacity: 0.9; font-style: italic; }
+
+        .delete-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover { background: rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 style="font-size: 1.4rem;">📅 Mon Calendrier - Licence 1 FSI</h1>
+</header>
+
+<div class="container">
+    <aside>
+        <h2>Ajouter un cours</h2>
+        <input type="text" id="courseName" placeholder="Nom du cours (ex: Algo)">
+        <input type="text" id="courseRoom" placeholder="Salle (ex: Amphi Cotton)">
+        
+        <select id="courseDay">
+            <option value="1">Lundi</option>
+            <option value="2">Mardi</option>
+            <option value="3">Mercredi</option>
+            <option value="4">Jeudi</option>
+            <option value="5">Vendredi</option>
+        </select>
+
+        <select id="courseStart">
+            <option value="8">08:00</option>
+            <option value="9">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+        </select>
+
+        <select id="courseDuration">
+            <option value="1">1 heure</option>
+            <option value="1.5">1h30</option>
+            <option value="2">2 heures</option>
+            <option value="3">3 heures</option>
+        </select>
+
+        <select id="courseType">
+            <option value="cours">Cours</option>
+            <option value="td">TD</option>
+            <option value="tp">TP</option>
+        </select>
+
+        <button onclick="addCourse()">Ajouter au planning</button>
+        <p style="font-size: 0.7rem; color: #666; margin-top: 20px;">
+            Note: Les données ne sont pas sauvegardées (Site de façade).
+        </p>
+    </aside>
+
+    <main id="calendarGrid">
+        <div class="grid-header"></div>
+        <div class="grid-header">Lun.</div>
+        <div class="grid-header">Mar.</div>
+        <div class="grid-header">Mer.</div>
+        <div class="grid-header">Jeu.</div>
+        <div class="grid-header">Ven.</div>
+
+        </main>
+</div>
+
+<script>
+    const calendarGrid = document.getElementById('calendarGrid');
+
+    // 1. Initialiser la grille (Heures de 8h à 20h)
+    function initGrid() {
+        for (let hour = 8; hour < 20; hour++) {
+            // Affichage de l'heure
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'time-slot';
+            timeDiv.innerText = `${hour}:00`;
+            calendarGrid.appendChild(timeDiv);
+
+            // Cellules pour chaque jour (1 à 5)
+            for (let day = 1; day <= 5; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                calendarGrid.appendChild(cell);
+            }
+        }
+    }
+
+    // 2. Ajouter un cours
+    function addCourse() {
+        const name = document.getElementById('courseName').value;
+        const room = document.getElementById('courseRoom').value;
+        const day = parseInt(document.getElementById('courseDay').value);
+        const start = parseFloat(document.getElementById('courseStart').value);
+        const duration = parseFloat(document.getElementById('courseDuration').value);
+        const type = document.getElementById('courseType').value;
+
+        if (!name) { alert("Donne un nom au cours !"); return; }
+
+        // Calcul du positionnement Grid
+        // Ligne de départ : (Heure - 8) + 2 (car la ligne 1 est l'en-tête)
+        const rowStart = (start - 8) + 2;
+        const colStart = day + 1;
+
+        // Création de la carte
+        const card = document.createElement('div');
+        card.className = `course-card ${type}`;
+        
+        // Positionnement dynamique avec CSS Grid
+        card.style.gridRow = `${rowStart} / span ${duration * 1}`; // Simplifié (marche mieux sur des blocs d'1h)
+        // Note: Pour gérer les demi-heures (1.5), il faudrait une grille plus fine. 
+        // Ici on arrondit la hauteur pour l'exemple.
+        card.style.gridColumn = colStart;
+        card.style.height = `${(duration * 60) - 8}px`; // Ajustement visuel
+
+        card.innerHTML = `
+            <button class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="title">${name}</div>
+            <div class="room">${room}</div>
+        `;
+
+        calendarGrid.appendChild(card);
+
+        // Reset formulaire
+        document.getElementById('courseName').value = "";
+    }
+
+    initGrid();
+
+    // Ajouter quelques cours d'exemple (comme sur tes captures)
+    function addExemple(name, room, day, start, duration, type) {
+        document.getElementById('courseName').value = name;
+        document.getElementById('courseRoom').value = room;
+        document.getElementById('courseDay').value = day;
+        document.getElementById('courseStart').value = start;
+        document.getElementById('courseDuration').value = duration;
+        document.getElementById('courseType').value = type;
+        addCourse();
+    }
+
+    // On pré-remplit pour le fun
+    window.onload = () => {
+        addExemple("Algorithmique 1", "Amphi COTTON", 1, 10, 2, "cours");
+        addExemple("Maths-calc1", "U6-109", 1, 13.5, 1.5, "td");
+        addExemple("Anglais", "Distanciel", 2, 13.5, 1.5, "td");
+    }
+</script>
+
+</body>
+</html>
