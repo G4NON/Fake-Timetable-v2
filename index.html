@@ -3,323 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CELCAT Calendar</title>
-    <style>
-        :root {
-            --ut3-green: #1d3d2e;
-            --sidebar-bg: #f0f4f2;
-            --border-dark: #d1d1d1;
-            --cours-blue: #7d8cf4;
-            --td-red: #f88c8c;
-            --tp-teal: #64b4a1;
-            --text-main: #333333;
-            --header-height: 50px;
-            --today-bg: #fff9e6; /* Couleur jaunâtre pour le jour actuel */
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            color: var(--text-main);
-            overflow: hidden;
-        }
-
-        header {
-            background-color: var(--ut3-green);
-            color: white;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            font-size: 14px;
-            height: var(--header-height);
-            z-index: 200;
-        }
-
-        .logo-area { font-weight: bold; font-size: 18px; margin-right: 30px; }
-        nav { display: flex; align-items: center; height: 100%; }
-        nav span { margin: 0 15px; cursor: pointer; opacity: 0.9; display: flex; align-items: center; height: 100%; }
-        .user-info { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 8px; }
-
-        .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
-
-        aside {
-            width: 280px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-dark);
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-        }
-
-        .sidebar-title { background: #e2e8e5; padding: 12px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border-dark); }
-        .sidebar-content { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border-dark); }
-        .mini-calendar { margin-top: 10px; border: 1px solid #ccc; background: white; text-align: center; width: 60px; border-radius: 3px; overflow: hidden; }
-
-        .editor-drawer {
-            position: fixed;
-            left: -305px;
-            top: var(--header-height);
-            bottom: 0;
-            width: 300px;
-            background: white;
-            border-right: 3px solid var(--ut3-green);
-            z-index: 150; 
-            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 10px 0 20px rgba(0,0,0,0.3);
-            padding: 25px 20px;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-
-        .editor-drawer.open { left: 0; }
-
-        .tab-trigger {
-            position: absolute;
-            right: -42px;
-            bottom: 40px; 
-            width: 42px;
-            height: 50px;
-            background: var(--ut3-green);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 0 5px 5px 0;
-            font-size: 22px;
-            box-shadow: 4px 0 8px rgba(0,0,0,0.1);
-        }
-
-        .admin-panel h4 { margin: 0 0 15px 0; color: var(--ut3-green); text-transform: uppercase; font-size: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        input, select, button { width: 100%; margin-bottom: 12px; font-size: 13px; padding: 10px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
-        .btn-valider { background: #f5f5f5; font-weight: bold; cursor: pointer; border: 1px solid #bbb; }
-        .btn-pdf { background: #333; color: white; cursor: pointer; font-weight: bold; border: none; }
-
-        .calendar-container { flex: 1; display: flex; flex-direction: column; background: white; }
-        .calendar-top-bar { padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-dark); background: #fcfcfc; }
-        .current-date-display { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
-
-        .grid-wrapper { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 60px repeat(7, 1fr); grid-template-rows: 35px repeat(28, 35px); position: relative; }
-        .grid-header { background: #fcfcfc; border: 0.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #1d3d2e; position: sticky; top: 0; z-index: 20; }
-        
-        /* STYLE DU JOUR ACTUEL */
-        .today-highlight {
-            background-color: var(--today-bg) !important;
-        }
-
-        .time-label { grid-column: 1; border: 0.5px solid #efefef; font-size: 10px; text-align: center; padding-top: 6px; background: #f9f9f9; }
-
-        .course-box { 
-            margin: 1px 2px; padding: 5px; font-size: 10px; color: #000; border: 1px solid #000; 
-            border-radius: 4px; position: relative; z-index: 5; line-height: 1.2;
-            overflow: hidden; display: flex; flex-direction: column; box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        .course-box.cours { background-color: var(--cours-blue); }
-        .course-box.td { background-color: var(--td-red); }
-        .course-box.tp { background-color: var(--tp-teal); }
-        
-        .course-box .time-info { font-size: 10px; margin-bottom: 2px; }
-        .course-box .type-info { font-weight: bold; margin-bottom: 1px; }
-        .course-box .title-info { margin-bottom: 1px; }
-        .course-box .room-info { margin-bottom: 1px; }
-        .course-box .prof-info { font-size: 9px; font-style: italic; }
-
-        .del-btn { position: absolute; bottom: 3px; right: 3px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.1); cursor: pointer; font-size: 11px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 2px; opacity: 0; transition: opacity 0.2s; }
-        .course-box:hover .del-btn { opacity: 1; }
-
-        @media print { .editor-drawer, .tab-trigger, header { display: none !important; } }
-    </style>
+    <title>Traducteur de Symboles</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <div class="logo-area">Université de Toulouse</div>
-    <nav><span>Accueil</span><span>Sélecteur de dates</span><span>Filtre d'événements</span><span>Partager</span><span>Aide</span></nav>
-    <div class="user-info" id="topUserInfo">👤 Déconnexion - [NUMERO]</div>
-</header>
+    <div class="main-container">
+        <!-- Zone de texte du haut -->
+        <div class="text-display-area">
+            <p id="displayText">Ici apparaîtra le texte tapé...</p>
+        </div>
 
-<div class="layout">
-    <div class="editor-drawer" id="drawer">
-        <div class="tab-trigger" onclick="toggleDrawer()" title="Éditeur de planning">⚙️</div>
-        <div class="admin-panel">
-            <h4>Éditeur de Planning</h4>
-            <input type="text" id="cName" placeholder="Nom du cours">
-            <input type="text" id="cRoom" placeholder="Salle">
-            <input type="text" id="cProf" placeholder="Nom du Prof">
-            <select id="cDay">
-                <option value="2">Lundi</option><option value="3">Mardi</option>
-                <option value="4">Mercredi</option><option value="5">Jeudi</option>
-                <option value="6">Vendredi</option><option value="7">Samedi</option>
-                <option value="8">Dimanche</option>
-            </select>
-            <select id="cStartH"></select>
-            <select id="cDur">
-                <option value="2">1h00</option><option value="3">1h30</option><option value="4">2h00</option><option value="6">3h00</option>
-            </select>
-            <select id="cType">
-                <option value="Cours">Cours</option><option value="TD">TD</option><option value="TP">TP</option>
-            </select>
-            <button class="btn-valider" onclick="addCourse()">Valider</button>
-            <button class="btn-pdf" onclick="window.print()">Télécharger PDF</button>
-            <button style="border:none; background:none; text-decoration:underline; font-size:10px; cursor:pointer; color: #666;" onclick="resetIdentity()">Changer d'identité</button>
+        <!-- Zone du clavier des symboles -->
+        <div class="symbols-keyboard">
+            <!-- Nous allons générer les touches ici à l'aide de données réutilisables -->
+            <!-- Pour cet exemple, je liste les touches manuellement -->
+            
+            <div class="key-row">
+                <button class="symbol-key" data-letter="A"><span class="letter">A</span><span class="symbol-pixel" style="--char-index: 0;"></span></button>
+                <button class="symbol-key" data-letter="B"><span class="letter">B</span><span class="symbol-pixel" style="--char-index: 1;"></span></button>
+                <button class="symbol-key" data-letter="C"><span class="letter">C</span><span class="symbol-pixel" style="--char-index: 2;"></span></button>
+                <button class="symbol-key" data-letter="D"><span class="letter">D</span><span class="symbol-pixel" style="--char-index: 3;"></span></button>
+                <button class="symbol-key" data-letter="E"><span class="letter">E</span><span class="symbol-pixel" style="--char-index: 4;"></span></button>
+                <button class="symbol-key" data-letter="F"><span class="letter">F</span><span class="symbol-pixel" style="--char-index: 5;"></span></button>
+                <button class="symbol-key" data-letter="G"><span class="letter">G</span><span class="symbol-pixel" style="--char-index: 6;"></span></button>
+                <button class="symbol-key" data-letter="H"><span class="letter">H</span><span class="symbol-pixel" style="--char-index: 7;"></span></button>
+                <button class="symbol-key" data-letter="I"><span class="letter">I</span><span class="symbol-pixel" style="--char-index: 8;"></span></button>
+                <button class="symbol-key" data-letter="J"><span class="letter">J</span><span class="symbol-pixel" style="--char-index: 9;"></span></button>
+                <button class="symbol-key" data-letter="K"><span class="letter">K</span><span class="symbol-pixel" style="--char-index: 10;"></span></button>
+                <button class="symbol-key" data-letter="L"><span class="letter">L</span><span class="symbol-pixel" style="--char-index: 11;"></span></button>
+                <button class="symbol-key" data-letter="M"><span class="letter">M</span><span class="symbol-pixel" style="--char-index: 12;"></span></button>
+            </div>
+            
+            <div class="key-row">
+                <button class="symbol-key" data-letter="N"><span class="letter">N</span><span class="symbol-pixel" style="--char-index: 13;"></span></button>
+                <button class="symbol-key" data-letter="O"><span class="letter">O</span><span class="symbol-pixel" style="--char-index: 14;"></span></button>
+                <button class="symbol-key" data-letter="P"><span class="letter">P</span><span class="symbol-pixel" style="--char-index: 15;"></span></button>
+                <button class="symbol-key" data-letter="Q"><span class="letter">Q</span><span class="symbol-pixel" style="--char-index: 16;"></span></button>
+                <button class="symbol-key" data-letter="R"><span class="letter">R</span><span class="symbol-pixel" style="--char-index: 17;"></span></button>
+                <button class="symbol-key" data-letter="S"><span class="letter">S</span><span class="symbol-pixel" style="--char-index: 18;"></span></button>
+                <button class="symbol-key" data-letter="T"><span class="letter">T</span><span class="symbol-pixel" style="--char-index: 19;"></span></button>
+                <button class="symbol-key" data-letter="U"><span class="letter">U</span><span class="symbol-pixel" style="--char-index: 20;"></span></button>
+                <button class="symbol-key" data-letter="V"><span class="letter">V</span><span class="symbol-pixel" style="--char-index: 21;"></span></button>
+                <button class="symbol-key" data-letter="W"><span class="letter">W</span><span class="symbol-pixel" style="--char-index: 22;"></span></button>
+                <button class="symbol-key" data-letter="X"><span class="letter">X</span><span class="symbol-pixel" style="--char-index: 23;"></span></button>
+                <button class="symbol-key" data-letter="Y"><span class="letter">Y</span><span class="symbol-pixel" style="--char-index: 24;"></span></button>
+                <button class="symbol-key" data-letter="Z"><span class="letter">Z</span><span class="symbol-pixel" style="--char-index: 25;"></span></button>
+            </div>
+            
+            <!-- Contrôles -->
+            <div class="key-row controls-row">
+                <button class="control-key" id="spaceKey">ESPACE</button>
+                <button class="control-key" id="clearKey">EFFACER</button>
+            </div>
         </div>
     </div>
 
-    <aside>
-        <div class="sidebar-title">Événement</div>
-        <div class="sidebar-content" style="color:#999; font-style: italic;">(aucun sélectionné)</div>
-        <div class="sidebar-title">Étudiant</div>
-        <div class="sidebar-content">
-            <strong id="sideUserName" style="font-size: 15px;">Chargement...</strong><br>
-            Département: FSI / Licence<br>
-            <div class="mini-calendar" id="miniCal"></div>
-        </div>
-    </aside>
+    <!-- Script simple pour la démo d'interaction (optionnel) -->
+    <script>
+        const displayText = document.getElementById('displayText');
+        const keyboard = document.querySelector('.symbols-keyboard');
+        let currentText = "";
 
-    <div class="calendar-container">
-        <div class="calendar-top-bar">
-            <div style="display:flex; gap:8px;">
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">Aujourd'hui</button>
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">&lt;</button>
-                <button style="background:#f9f9f9; border:1px solid #ccc; padding:5px 10px; font-size:12px; cursor:pointer; border-radius:3px;">&gt;</button>
-            </div>
-            <div class="current-date-display"><span id="dateDisplay"></span> 📅</div>
-            <div style="display:flex; border:1px solid #ccc; border-radius:3px; overflow:hidden;">
-                <button style="background:#f9f9f9; border:none; border-right:1px solid #ccc; padding:5px 12px; font-size:12px; cursor:pointer;">Mois</button>
-                <button style="background:#dcdcdc; border:none; border-right:1px solid #ccc; padding:4px 10px; font-size:11px; cursor:pointer; font-weight:bold;">Semaine</button>
-                <button style="background:#f9f9f9; border:none; padding:5px 12px; font-size:12px; cursor:pointer;">Jour</button>
-            </div>
-        </div>
+        keyboard.addEventListener('click', (e) => {
+            const key = e.target.closest('button');
+            if (!key) return;
 
-        <div class="grid-wrapper" id="grid">
-            <div class="grid-header"></div>
-            <div class="grid-header" id="col-1">lun. <span id="d1"></span></div>
-            <div class="grid-header" id="col-2">mar. <span id="d2"></span></div>
-            <div class="grid-header" id="col-3">mer. <span id="d3"></span></div>
-            <div class="grid-header" id="col-4">jeu. <span id="d4"></span></div>
-            <div class="grid-header" id="col-5">ven. <span id="d5"></span></div>
-            <div class="grid-header" id="col-6">sam. <span id="d6"></span></div>
-            <div class="grid-header" id="col-7">dim. <span id="d7"></span></div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const grid = document.getElementById('grid');
-    const drawer = document.getElementById('drawer');
-    const startH = document.getElementById('cStartH');
-    let courses = JSON.parse(localStorage.getItem('celcat_replica_vfinal')) || [];
-
-    function toggleDrawer() { drawer.classList.toggle('open'); }
-
-    function checkIdentity() {
-        let name = localStorage.getItem('studentName'), number = localStorage.getItem('studentNumber');
-        if (!name || !number) {
-            name = prompt("Prénom et NOM :"); number = prompt("Numéro Étudiant :");
-            localStorage.setItem('studentName', (name || "UTILISATEUR").toUpperCase());
-            localStorage.setItem('studentNumber', number || "00000000");
-        }
-        document.getElementById('topUserInfo').innerText = `👤 Déconnexion - ${localStorage.getItem('studentNumber')}`;
-        document.getElementById('sideUserName').innerText = `${localStorage.getItem('studentName')} (${localStorage.getItem('studentNumber')})`;
-    }
-
-    function resetIdentity() { localStorage.clear(); location.reload(); }
-
-    function updateDates() {
-        const today = new Date();
-        const dayOfWeek = today.getDay(); 
-        const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const monday = new Date(today.setDate(diffToMonday));
-        const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
-        
-        document.getElementById('dateDisplay').innerText = `${monday.getDate()} – ${sunday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} 2026`;
-
-        for(let i=0; i<7; i++) {
-            let d = new Date(new Date(monday).setDate(monday.getDate() + i));
-            document.getElementById(`d${i+1}`).innerText = `${d.getDate()}/${d.getMonth()+1}`;
-        }
-        
-        // --- LOGIQUE DU JOUR ACTUEL ---
-        const currentDay = new Date().getDay(); // 0 (Dim) à 6 (Sam)
-        const dayIndex = currentDay === 0 ? 7 : currentDay; // Convertir Dimanche en 7, Lundi en 1
-        
-        // Surligner le header
-        document.getElementById(`col-${dayIndex}`).classList.add('today-highlight');
-        
-        // Surligner toutes les cellules de la colonne
-        document.querySelectorAll('.cell-day-' + dayIndex).forEach(cell => {
-            cell.classList.add('today-highlight');
-        });
-
-        document.getElementById('miniCal').innerHTML = `<div style="background:#cc0000; color:white; font-size:10px; font-weight:bold; padding:2px;">${new Intl.DateTimeFormat('fr-FR', {month:'short'}).format(new Date()).toUpperCase()}</div><div style="font-size:18px; font-weight:bold; padding:4px;">${new Date().getDate()}</div>`;
-    }
-
-    function rowToTime(row) {
-        let totalMinutes = (row - 2) * 30 + (7 * 60);
-        let h = Math.floor(totalMinutes / 60);
-        let m = totalMinutes % 60;
-        return (h < 10 ? '0'+h : h) + ':' + (m === 0 ? '00' : m);
-    }
-
-    function init() {
-        checkIdentity(); updateDates();
-        const currentDay = new Date().getDay();
-        const dayIndex = currentDay === 0 ? 7 : currentDay;
-
-        for (let h = 7; h < 21; h++) {
-            for (let m of ['00', '30']) {
-                const oValue = (h-7)*2 + (m === '30' ? 3 : 2);
-                
-                // Label heure
-                const l = document.createElement('div');
-                l.className = 'time-label'; l.style.gridRow = oValue;
-                l.innerText = m === '00' ? h + ':00' : '';
-                grid.appendChild(l);
-
-                // Options select
-                const o = document.createElement('option');
-                o.value = oValue; o.innerText = h + ':' + m;
-                startH.appendChild(o);
-
-                // Créer les cellules de fond pour les 7 jours
-                for (let d = 1; d <= 7; d++) {
-                    const cell = document.createElement('div');
-                    cell.style.gridRow = oValue;
-                    cell.style.gridColumn = d + 1;
-                    cell.style.border = '0.5px solid #efefef';
-                    if (d === dayIndex) cell.classList.add('today-highlight');
-                    grid.appendChild(cell);
-                }
+            if (key.classList.contains('symbol-key')) {
+                currentText += key.dataset.letter;
+            } else if (key.id === 'spaceKey') {
+                currentText += " ";
+            } else if (key.id === 'clearKey') {
+                currentText = "";
             }
-        }
-        render();
-    }
 
-    function addCourse() {
-        const startRow = parseInt(document.getElementById('cStartH').value);
-        const duration = parseInt(document.getElementById('cDur').value);
-        courses.push({ id: Date.now(), name: document.getElementById('cName').value || 'Cours', room: document.getElementById('cRoom').value || 'Salle', prof: document.getElementById('cProf').value || 'Prof', day: document.getElementById('cDay').value, start: startRow, startTime: rowToTime(startRow), endTime: rowToTime(startRow + duration), dur: duration, type: document.getElementById('cType').value });
-        localStorage.setItem('celcat_replica_vfinal', JSON.stringify(courses)); render();
-    }
-
-    function render() {
-        document.querySelectorAll('.course-box').forEach(b => b.remove());
-        courses.forEach(c => {
-            const b = document.createElement('div');
-            b.className = `course-box ${c.type.toLowerCase()}`;
-            b.style.gridColumn = c.day; b.style.gridRow = `${c.start} / span ${c.dur}`;
-            b.innerHTML = `<div class="time-info">${c.startTime} - ${c.endTime}</div><div class="type-info">${c.type}</div><div class="title-info">KINXPA11 - ${c.name}</div><div class="room-info">FSI / ${c.room}</div><div class="prof-info">${c.prof}</div><button class="del-btn" onclick="event.stopPropagation(); del(${c.id})">×</button>`;
-            grid.appendChild(b);
+            displayText.textContent = currentText || "Ici apparaîtra le texte tapé...";
         });
-    }
-
-    function del(id) { courses = courses.filter(x => x.id !== id); localStorage.setItem('celcat_replica_vfinal', JSON.stringify(courses)); render(); }
-
-    init();
-</script>
+    </script>
 </body>
 </html>
